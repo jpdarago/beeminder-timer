@@ -93,3 +93,32 @@ button:hover {
   margin-top: 0.5rem;
   color: #ff6666;
 }
+
+/* Better <select> styling */
+select {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #232323;
+  color: #e5e5e5;
+  font-size: 0.9rem;
+  appearance: none;
+  -webkit-appearance: none;  /* Safari fix */
+  -moz-appearance: none;     /* Firefox fix */
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23aaaaaa' height='20' width='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><polygon points='5,7 15,7 10,14'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right .75rem center;
+  background-size: 1rem;
+}
+
+/* Hover + focus behavior */
+select:hover {
+  border-color: #555;
+}
+
+select:focus {
+  outline: none;
+  border-color: #0077ff;
+  box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.3);
+}
