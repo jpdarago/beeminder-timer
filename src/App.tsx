@@ -324,9 +324,7 @@ const App: React.FC = () => {
 
         {(status === "finished" ||
           status === "posting" ||
-          status === "error") &&
-          status !== "running" &&
-          status !== "idle" && (
+          status === "error") && (
             <button onClick={resetAfterFinish}>Reset</button>
           )}
 
