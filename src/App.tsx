@@ -302,22 +302,22 @@ const App: React.FC = () => {
               <option key={g.slug} value={g.slug}>
                 {(g.title ?? g.slug) + " (" + g.slug + ")"}
               </option>
-            ))}
-          </select>
-        </label>
-      </section>
+              ))}
+            </select>
+          </label>
+        </section>
 
-      <section>
-        <label>
-          Comment:
-          <input
-            type="text"
-            value={comment}
-            onChange={e => setComment(e.target.value)}
-            disabled={running}
-          />
-        </label>
-      </section>
+        <section>
+          <label>
+            Comment:
+            <input
+              type="text"
+              value={comment}
+              onChange={e => setComment(e.target.value)}
+              disabled={running}
+            />
+          </label>
+        </section>
 
       <section>
         <h2>Timer</h2>
@@ -325,15 +325,15 @@ const App: React.FC = () => {
         <div className="timer-display">{displayTime}</div>
 
         {status === "idle" && (
-          <button onClick={startTimer}>Start 30-minute session</button>
+          <button onClick={startTimer}>Start ⏱️</button>
         )}
 
         {status === "running" && (
           <>
             <button onClick={() => setPaused(p => !p)}>
-              {paused ? "Resume" : "Pause"}
-            </button>
-            <button onClick={cancelTimer}>Cancel</button>
+              {paused ? "Resume ▶️" : "Pause ⏸️"}
+              </button>
+            <button onClick={cancelTimer}>Cancel ❌</button>
           </>
         )}
 
