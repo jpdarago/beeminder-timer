@@ -89,6 +89,21 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Change the tab title to show the timer
+  useEffect(() => {
+    // When there's no timer running, show the default title
+    if (remaining === null || remaining <= 0) {
+      document.title = "Beeminder Timer";
+      return;
+    }
+
+    // Format the time like 25:03 or 00:17
+    const m = Math.floor(remaining / 60).toString().padStart(2, "0");
+    const s = (remaining % 60).toString().padStart(2, "0");
+
+    document.title = `${m}:${s} · Beeminder Timer`;
+  }, [remaining]);
+
   // Ask for notification permission once
   useEffect(() => {
     if ("Notification" in window) {
