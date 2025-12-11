@@ -186,8 +186,7 @@ const App: React.FC = () => {
             body: "Your 30-minute session has been logged to Beeminder.",
             icon: "bee.svg",
             silent: false,
-            requireInteraction: false,
-            actions: []
+            requireInteraction: false
           });
         }
       } catch (e) {
@@ -229,7 +228,8 @@ const App: React.FC = () => {
     setError(null);
   };
 
-  const togglePause = (p) => {
+  const togglePause = () => {
+    if (remaining === null) return;
     if (!paused) {
       // pause: freeze remaining, drop deadline
       setDeadline(null);
