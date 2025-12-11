@@ -1,124 +1,227 @@
-/* Global page style */
+/* === Beeminder Color Palette === */
+:root {
+  --bee-yellow: #ffcc00;
+  --bee-purple: #6a4c93;
+  --bee-purple-dark: #4c2e68;
+  --bee-black: #333333;
+  --bee-bg: #f5f5f5;
+  --panel-bg: #ffffff;
+  --panel-border: #e2d9ee;
+}
+
+/* === Global Page Style === */
 body {
   margin: 0;
   padding: 0;
-  background: #121212;
-  color: #e0e0e0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bee-purple-dark);
+  color: var(--bee-black);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
 }
 
-/* Container card */
+/* === Main Wrapper (white card) === */
 .app-wrapper {
   margin-top: 3rem;
-  padding: 2rem 2.5rem;
-  background: #1c1c1c;
+  padding: 0; /* banner touches the edges */
+  background: var(--panel-bg);
   border-radius: 12px;
-  width: 90%;
-  max-width: 520px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  width: 100%;
+  max-width: 600px;
+  border: 2px solid var(--panel-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
 }
 
-/* Title */
-.app-title {
-  text-align: center;
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
+/* === Header Banner === */
+.app-header-banner {
+  background: linear-gradient(135deg, var(--bee-purple), var(--bee-yellow));
+  padding: 0.9rem 1.4rem;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   color: #fff;
 }
 
-/* Section titles */
-h2 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 1.5rem 0 1rem;
-  color: #e5e5e5;
-  text-align: center;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid white;
+.app-logo {
+  width: 48px;
+  height: 48px;
 }
 
-/* Labels and fields */
+.app-heading {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.app-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Add padding to content sections inside card */
+section {
+  padding: 1.2rem 1.6rem;
+  text-align: center;
+}
+section:last-of-type {
+  padding-bottom: 1.6rem;
+}
+
+/* === Section Titles === */
+h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 1.4rem 0 1rem;
+  color: var(--bee-purple);
+  text-align: center;
+  border-bottom: 0.15em solid var(--bee-purple);
+}
+
+/* === Labels, Inputs, Selects === */
 label {
   display: block;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.7rem;
+  font-size: 0.95rem;
+  color: var(--bee-purple);
+}
+
+input,
+select {
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--panel-border);
+  background: #faf8ff;
+  color: var(--bee-black);
   font-size: 0.95rem;
 }
 
-input {
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background: #232323;
-  color: #e5e5e5;
-  margin-top: 0.25rem;
-}
-
-/* Timer display */
-.timer-display {
-  font-size: 3.4rem;
-  font-weight: 600;
-  margin: 1rem 0;
-  text-align: center;
-}
-
-/* Buttons */
-button {
-  display: block;
-  margin: 0.5rem auto 0;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: #0077ff;
-  color: white;
-  font-size: 1rem;
-}
-button:hover {
-  background: #005fcc;
-}
-
-/* Status & errors */
-.status-text {
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  opacity: 0.8;
-}
-.error-text {
-  margin-top: 0.5rem;
-  color: #ff6666;
-}
-
-/* Better <select> styling */
 select {
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background: #232323;
-  color: #e5e5e5;
-  font-size: 0.9rem;
+  width: 95%;
+}
+
+input {
+  width: 90%;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--bee-purple);
+  box-shadow: 0 0 0 2px rgba(106, 76, 147, 0.2);
+}
+
+/* Custom select dropdown arrow */
+select {
   appearance: none;
-  -webkit-appearance: none;  /* Safari fix */
-  -moz-appearance: none;     /* Firefox fix */
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%23aaaaaa' height='20' width='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><polygon points='5,7 15,7 10,14'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%236a4c93' height='20' width='20' viewBox='0 0 20 20'><polygon points='5,7 15,7 10,14'/></svg>");
   background-repeat: no-repeat;
   background-position: right .75rem center;
   background-size: 1rem;
 }
 
-/* Hover + focus behavior */
-select:hover {
-  border-color: #555;
+/* === Timer Display === */
+.timer-display {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 1.2rem 0;
+  text-align: center;
+  color: var(--bee-purple-dark);
 }
 
-select:focus {
-  outline: none;
-  border-color: #0077ff;
-  box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.3);
+/* === Buttons (Styled with Beeminder Colors) === */
+.btn {
+  display: block;
+  margin: auto;
+  padding: 0.65rem 1.2rem;
+  border-radius: 999px; /* pill shape */
+  border: none;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: transform 0.1s ease, box-shadow 0.1s ease,
+    background 0.15s ease;
+}
+
+/* === Start (Primary) === */
+.btn-primary {
+  background: var(--bee-yellow);
+  color: var(--bee-black);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.btn-primary:hover {
+  background: #ffdb4d;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+.btn-primary:active {
+  background: #e6b800;
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* === Pause / Resume (Secondary) === */
+.btn-secondary {
+  background: var(--bee-purple);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(106, 76, 147, 0.35);
+}
+.btn-secondary:hover {
+  background: #7b5baa;
+}
+.btn-secondary:active {
+  background: #5a3f86;
+}
+
+/* === Cancel (Danger) === */
+.btn-cancel {
+  background: #ff6666;
+  color: #ffffff;
+}
+.btn-cancel:hover {
+  background: #ff7c7c;
+}
+.btn-cancel:active {
+  background: #e65050;
+}
+
+/* === Reset (Neutral) === */
+.btn-reset {
+  background: #eeeeee;
+  color: var(--bee-black);
+}
+.btn-reset:hover {
+  background: #f5f5f5;
+}
+.btn-reset:active {
+  background: #e0e0e0;
+}
+
+/* === Status Text === */
+.status-text {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
+.error-text {
+  margin-top: 0.5rem;
+  color: #d32f2f;
 }

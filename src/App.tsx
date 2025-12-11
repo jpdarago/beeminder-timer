@@ -271,25 +271,22 @@ const App: React.FC = () => {
 
   return (
     <div className="app-wrapper">
-      <h1 className="app-title">Beeminder 30-Min Timer</h1>
-
-      <h2>Session</h2>
+      <div className="app-header-banner">
+        <div className="app-header">
+          <img src="bee.svg" alt="Bee timer logo" className="app-logo" />
+          <div className="app-heading">
+            <h1 className="app-title">Beeminder 30-Min Timer</h1>
+            <p className="app-subtitle">30-minute focus sessions, logged as datapoints.</p>
+          </div>
+        </div>
+      </div>
 
       <section>
-        <button
-          type="button"
-          onClick={refreshGoals}
-          disabled={running || loadingGoals}
-          aria-label="Refresh goals from Beeminder"
-        >
-          Refresh goals 🔄
-        </button>
 
-        <div className="status-text">Last updated: {lastUpdateLabel}</div>
-
-        {goalsError && <div className="error-text">{goalsError}</div>}
+        <h2>Session</h2>
 
         <label>
+          <b> Goal </b>
           <select
             value={goalSlug}
             onChange={e => setGoalSlug(e.target.value)}
@@ -305,42 +302,56 @@ const App: React.FC = () => {
               ))}
             </select>
           </label>
-        </section>
 
-        <section>
-          <label>
-            Comment:
-            <input
-              type="text"
-              value={comment}
-              onChange={e => setComment(e.target.value)}
-              disabled={running}
-            />
-          </label>
+          <div className="status-text">Last updated: {lastUpdateLabel}</div>
+
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={refreshGoals}
+            disabled={running || loadingGoals}
+            aria-label="Refresh goals from Beeminder"
+          >
+            Refresh goals 🔄
+          </button>
+
+          {goalsError && <div className="error-text">{goalsError}</div>}
+
+
         </section>
 
       <section>
         <h2>Timer</h2>
 
+        <label>
+          <b> Comment</b>
+          <input
+            type="text"
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            disabled={running}
+          />
+        </label>
+
         <div className="timer-display">{displayTime}</div>
 
         {status === "idle" && (
-          <button onClick={startTimer}>Start ⏱️</button>
+          <button className="btn btn-primary" onClick={startTimer}>Start ⏱️</button>
         )}
 
         {status === "running" && (
           <>
-            <button onClick={() => setPaused(p => !p)}>
-              {paused ? "Resume ▶️" : "Pause ⏸️"}
+            <button className="btn btn-secondary" onClick={() => setPaused(p => !p)}>
+              {paused ? "▶️" : "⏸️"}
               </button>
-            <button onClick={cancelTimer}>Cancel ❌</button>
+            <button className="btn btn-secondary" onClick={cancelTimer}>❌</button>
           </>
         )}
 
         {(status === "finished" ||
           status === "posting" ||
           status === "error") && (
-            <button onClick={resetAfterFinish}>Reset</button>
+            <button className="btn btn-secondary" onClick={resetAfterFinish}>Reset</button>
           )}
 
         {error && <div className="error-text">{error}</div>}
@@ -356,6 +367,7 @@ const App: React.FC = () => {
             </div>
             <button
               type="button"
+              className="btn btn-secondary"
               onClick={() => setShowSettingsForm(true)}
               disabled={running}
             >
@@ -367,7 +379,6 @@ const App: React.FC = () => {
         {(!hasStoredSettings || showSettingsForm) && (
           <>
             <label>
-              Username:
               <input
                 type="text"
                 value={username}
@@ -377,7 +388,6 @@ const App: React.FC = () => {
             </label>
 
             <label>
-              Auth token:
               <input
                 type="password"
                 value={authToken}
@@ -386,19 +396,9 @@ const App: React.FC = () => {
               />
             </label>
 
-            <button type="button" onClick={saveSettings}>
-              Save settings locally
+            <button type="button" className="btn btn-secondary" onClick={saveSettings}>
+              ✅
             </button>
-
-            {hasStoredSettings && (
-              <button
-                type="button"
-                onClick={() => setShowSettingsForm(false)}
-                disabled={running}
-              >
-                ✅ Done
-              </button>
-            )}
           </>
         )}
       </section>
