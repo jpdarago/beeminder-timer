@@ -1,0 +1,51 @@
+name: Deploy Beeminder Timer
+
+on:
+  push:
+    branches:
+      - main   # deploy when pushing to main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          # Write your deploy key
+          echo "$WEBSITE_DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy.ssh
+          chmod 600 ~/.ssh/deploy.ssh
+
+          # Add host to known_hosts
+          ssh-keyscan -H "$WEBSITE_DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
+
+          # Create SSH config entry for convenience
+          echo "Host deploy-target" >> ~/.ssh/config
+          echo "  HostName $WEBSITE_DEPLOY_SSH_HOST" >> ~/.ssh/config
+          echo "  User $WEBSITE_DEPLOY_SSH_USER" >> ~/.ssh/config
+          echo "  IdentityFile ~/.ssh/deploy.ssh" >> ~/.ssh/config
+          echo "  IdentitiesOnly yes" >> ~/.ssh/config
+        env:
+          WEBSITE_DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.WEBSITE_DEPLOY_SSH_PRIVATE_KEY }}
+          WEBSITE_DEPLOY_SSH_HOST: ${{ secrets.WEBSITE_DEPLOY_SSH_HOST }}
+          WEBSITE_DEPLOY_SSH_USER: ${{ secrets.WEBSITE_DEPLOY_SSH_USER }}
+
+      - name: Deploy via rsync
+        run: |
+          rsync -avz --delete dist/ deploy-target:./beeminder-timer
