@@ -3,6 +3,9 @@ import "./App.css";
 
 const THIRTY_MINUTES = 30 * 60; // seconds
 
+const ding = new Audio("notification.mp3");
+ding.volume = 0.7;
+
 type Status = "idle" | "running" | "posting" | "finished" | "error";
 
 type BeeminderGoal = {
@@ -34,6 +37,8 @@ function formatTime(totalSeconds: number): string {
 
 const App: React.FC = () => {
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [deadline, setDeadline] = useState<number | null>(null);
+
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -113,18 +118,19 @@ const App: React.FC = () => {
 
   // Countdown effect with pause support
   useEffect(() => {
-    if (remaining === null || remaining <= 0 || paused) return;
+    if (status !== "running" || deadline === null) return;
 
     const id = window.setInterval(() => {
-      setRemaining(prev => {
-        if (prev === null) return prev;
-        if (prev <= 1) return 0;
-        return prev - 1;
-      });
-    }, 1000);
+      const msLeft = deadline - Date.now();
+      const secsLeft = Math.max(0, Math.round(msLeft / 1000));
+      setRemaining(secsLeft);
+      if (secsLeft <= 0) {
+        window.clearInterval(id);
+      }
+    }, 250); // 4x per second; drift-free because we recompute from deadline
 
     return () => window.clearInterval(id);
-  }, [remaining, paused]);
+  }, [status, deadline]);
 
   // When timer reaches 0, call Beeminder directly
   useEffect(() => {
@@ -166,12 +172,22 @@ const App: React.FC = () => {
           throw new Error(`Beeminder error ${res.status}: ${text}`);
         }
 
+        try {
+          ding.currentTime = 0;
+          void ding.play();
+        } catch {
+          // ignore
+        }
+
         setStatus("finished");
 
         if ("Notification" in window && Notification.permission === "granted") {
           new Notification("Session complete!", {
             body: "Your 30-minute session has been logged to Beeminder.",
-            icon: "/favicon.ico",
+            icon: "bee.svg",
+            silent: false,
+            requireInteraction: false,
+            actions: []
           });
         }
       } catch (e) {
@@ -193,9 +209,12 @@ const App: React.FC = () => {
     setStatus("running");
     setPaused(false);
     setRemaining(THIRTY_MINUTES);
+    const now = Date.now();
+    setDeadline(now + THIRTY_MINUTES * 1000);
   };
 
   const cancelTimer = () => {
+    setDeadline(null);
     setRemaining(null);
     setStatus("idle");
     setPaused(false);
@@ -203,10 +222,24 @@ const App: React.FC = () => {
   };
 
   const resetAfterFinish = () => {
+    setDeadline(null);
     setRemaining(null);
     setStatus("idle");
     setPaused(false);
     setError(null);
+  };
+
+  const togglePause = (p) => {
+    if (!paused) {
+      // pause: freeze remaining, drop deadline
+      setDeadline(null);
+      setPaused(true);
+    } else {
+      // resume: set new deadline based on remaining
+      const now = Date.now();
+      setDeadline(now + remaining * 1000);
+      setPaused(false);
+    }
   };
 
   const saveSettings = () => {
@@ -341,7 +374,7 @@ const App: React.FC = () => {
 
         {status === "running" && (
           <>
-            <button className="btn btn-secondary" onClick={() => setPaused(p => !p)}>
+            <button className="btn btn-secondary" onClick={togglePause}>
               {paused ? "▶️" : "⏸️"}
               </button>
             <button className="btn btn-secondary" onClick={cancelTimer}>❌</button>
