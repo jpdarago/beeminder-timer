@@ -415,6 +415,7 @@ const App: React.FC = () => {
               <input
                 type="text"
                 value={username}
+                placeholder="Username..."
                 onChange={e => setUsername(e.target.value)}
                 disabled={running}
               />
@@ -424,6 +425,7 @@ const App: React.FC = () => {
               <input
                 type="password"
                 value={authToken}
+                placeholder="Beeminder API token..."
                 onChange={e => setAuthToken(e.target.value)}
                 disabled={running}
               />
