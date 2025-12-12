@@ -183,7 +183,7 @@ const App: React.FC = () => {
 
         if ("Notification" in window && Notification.permission === "granted") {
           new Notification("Session complete!", {
-            body: "Your 30-minute session has been logged to Beeminder.",
+            body: `Logged session for ${goalSlug} to Beeminder.`,
             icon: "bee.svg",
             silent: false,
             requireInteraction: false
