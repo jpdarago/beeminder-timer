@@ -157,7 +157,7 @@ const App: React.FC = () => {
 
         const params = new URLSearchParams({
           auth_token: authToken,
-          value: selectedDuration.toString(),
+          value: (selectedDuration / 60).toString(),
           comment,
           timestamp: Math.floor(Date.now() / 1000).toString(),
         });
