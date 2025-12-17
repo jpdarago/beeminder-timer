@@ -142,6 +142,21 @@ select {
   color: var(--bee-purple-dark);
 }
 
+/* === Duration Buttons === */
+.duration-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.duration-buttons .btn {
+  display: inline-flex;
+  margin: 0;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+}
+
 /* === Buttons (Styled with Beeminder Colors) === */
 .btn {
   display: block;

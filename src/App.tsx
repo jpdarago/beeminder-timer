@@ -57,6 +57,10 @@ const App: React.FC = () => {
   const [hasStoredSettings, setHasStoredSettings] = useState(false);
   const [showSettingsForm, setShowSettingsForm] = useState(true);
 
+  const [selectedDuration, setSelectedDuration] = useState(THIRTY_MINUTES);
+
+  const durations = [5, 10, 20, 30, 45, 60]; // minutes
+
   const running = status === "running";
 
   // Load saved settings + goals from localStorage
@@ -153,7 +157,7 @@ const App: React.FC = () => {
 
         const params = new URLSearchParams({
           auth_token: authToken,
-          value: "1",
+          value: selectedDuration.toString(),
           comment,
           timestamp: Math.floor(Date.now() / 1000).toString(),
         });
@@ -207,9 +211,9 @@ const App: React.FC = () => {
     setError(null);
     setStatus("running");
     setPaused(false);
-    setRemaining(THIRTY_MINUTES);
+    setRemaining(selectedDuration);
     const now = Date.now();
-    setDeadline(now + THIRTY_MINUTES * 1000);
+    setDeadline(now + selectedDuration * 1000);
   };
 
   const cancelTimer = () => {
@@ -252,7 +256,7 @@ const App: React.FC = () => {
   };
 
   const displayTime =
-    remaining === null ? formatTime(THIRTY_MINUTES) : formatTime(remaining);
+    remaining === null ? formatTime(selectedDuration) : formatTime(remaining);
 
   // Fetch goals from Beeminder and cache locally
   const refreshGoals = async () => {
@@ -308,8 +312,8 @@ const App: React.FC = () => {
         <div className="app-header">
           <img src="bee.svg" alt="Bee timer logo" className="app-logo" />
           <div className="app-heading">
-            <h1 className="app-title">Beeminder 30-Min Timer</h1>
-            <p className="app-subtitle">30-minute focus sessions, logged as datapoints.</p>
+            <h1 className="app-title">Beeminder Timer</h1>
+            <p className="app-subtitle">Focus sessions, logged as datapoints.</p>
           </div>
         </div>
       </div>
@@ -355,6 +359,19 @@ const App: React.FC = () => {
 
       <section>
         <h2>Timer</h2>
+
+        <div className="duration-buttons">
+          {durations.map(duration => (
+            <button
+              key={duration}
+              className="btn btn-secondary"
+              onClick={() => setSelectedDuration(duration * 60)}
+              disabled={running}
+            >
+              {duration} min
+            </button>
+          ))}
+        </div>
 
         <label>
           <b> Comment</b>
