@@ -47,7 +47,7 @@ const App: React.FC = () => {
   const [username, setUsername] = useState("");
   const [authToken, setAuthToken] = useState("");
   const [goalSlug, setGoalSlug] = useState("");
-  const [comment, setComment] = useState("30-minute focus session");
+  const [comment, setComment] = useState("");
 
   const [goals, setGoals] = useState<BeeminderGoal[]>([]);
   const [loadingGoals, setLoadingGoals] = useState(false);
@@ -155,10 +155,12 @@ const App: React.FC = () => {
           username
         )}/goals/${encodeURIComponent(goalSlug)}/datapoints.json`;
 
+        const actualComment = comment.trim() || `${selectedDuration / 60}-minutes focus session`;
+
         const params = new URLSearchParams({
           auth_token: authToken,
           value: (selectedDuration / 60).toString(),
-          comment,
+          comment: actualComment,
           timestamp: Math.floor(Date.now() / 1000).toString(),
         });
 
@@ -200,7 +202,7 @@ const App: React.FC = () => {
     };
 
     postToBeeminder();
-  }, [remaining, status, username, authToken, goalSlug, comment]);
+  }, [remaining, status, username, authToken, goalSlug, comment, selectedDuration]);
 
   const startTimer = () => {
     if (!username || !authToken || !goalSlug) {
@@ -378,6 +380,7 @@ const App: React.FC = () => {
           <input
             type="text"
             value={comment}
+            placeholder={`${selectedDuration / 60}-minutes focus session`}
             onChange={e => setComment(e.target.value)}
             disabled={running}
           />
