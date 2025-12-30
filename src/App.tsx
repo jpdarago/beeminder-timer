@@ -11,6 +11,7 @@ type Status = "idle" | "running" | "posting" | "finished" | "error";
 type BeeminderGoal = {
   slug: string;
   title?: string;
+  gunits?: string;
 };
 
 type StoredSettings = {
@@ -310,18 +311,19 @@ const App: React.FC = () => {
       }
 
       const parsed = JSON.parse(text) as BeeminderGoal[];
-      setGoals(parsed);
+      const filteredGoals = parsed.filter(goal => goal.gunits === 'minutes');
+      setGoals(filteredGoals);
       const now = Date.now();
       setLastGoalsUpdate(now);
 
       const toStore: StoredGoals = {
-        goals: parsed,
+        goals: filteredGoals,
         updatedAt: now,
       };
       localStorage.setItem(GOALS_KEY, JSON.stringify(toStore));
 
-      if (!goalSlug && parsed.length > 0) {
-        setGoalSlug(parsed[0].slug);
+      if (!goalSlug && filteredGoals.length > 0) {
+        setGoalSlug(filteredGoals[0].slug);
       }
     } catch (e) {
       setGoalsError((e as Error).message);
