@@ -35,6 +35,23 @@ function formatTime(totalSeconds: number): string {
   return `${m}:${s}`;
 }
 
+const getYouTubeTitle = async (url: string): Promise<string | null> => {
+  const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/)watch\?v=(.*)(?:&.*)?/);
+  if (!match) return null;
+  const videoId = match[1];
+  console.log('Fetching YouTube title for video ID:', videoId);
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.title;
+    }
+  } catch (e) {
+    console.error('Failed to fetch YouTube title:', e);
+  }
+  return null;
+};
+
 const App: React.FC = () => {
   const [remaining, setRemaining] = useState<number | null>(null);
   const [deadline, setDeadline] = useState<number | null>(null);
@@ -48,6 +65,7 @@ const App: React.FC = () => {
   const [authToken, setAuthToken] = useState("");
   const [goalSlug, setGoalSlug] = useState("");
   const [comment, setComment] = useState("");
+  const [youtubeTitle, setYoutubeTitle] = useState<string | null>(null);
 
   const [goals, setGoals] = useState<BeeminderGoal[]>([]);
   const [loadingGoals, setLoadingGoals] = useState(false);
@@ -119,6 +137,15 @@ const App: React.FC = () => {
       Notification.requestPermission().catch(() => {});
     }
   }, []);
+
+  // Fetch YouTube title if comment is a YouTube URL
+  useEffect(() => {
+    if (comment.trim()) {
+      getYouTubeTitle(comment.trim()).then(setYoutubeTitle);
+    } else {
+      setYoutubeTitle(null);
+    }
+  }, [comment]);
 
   // Countdown effect with pause support
   useEffect(() => {
@@ -385,6 +412,7 @@ const App: React.FC = () => {
             disabled={running}
           />
         </label>
+        {youtubeTitle && <div className="youtube-title">YouTube Title: {youtubeTitle}</div>}
 
         <div className="timer-display">{displayTime}</div>
 

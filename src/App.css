@@ -124,6 +124,14 @@ select:focus {
   box-shadow: 0 0 0 2px rgba(106, 76, 147, 0.2);
 }
 
+/* YouTube Title Display */
+.youtube-title {
+  margin-top: 0.5rem;
+  color: var(--bee-black);
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
 /* Custom select dropdown arrow */
 select {
   appearance: none;
