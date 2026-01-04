@@ -423,7 +423,23 @@ const App: React.FC = () => {
         </label>
         {youtubeTitle && <div className="youtube-title">YouTube Title: {youtubeTitle}</div>}
 
-        <div className="timer-display">{displayTime}</div>
+        {status === "idle" ? (
+          <div>
+            <input
+              className="timer-display"
+              type="text"
+              min="1"
+              value={`${selectedDuration / 60}:00`}
+              onChange={e => {
+                const value = e.target.value.split(":")[0];
+                const minutes = parseInt(value) || 1;
+                setSelectedDuration(minutes * 60);
+              }}
+            />
+          </div>
+        ) : (
+          <div className="timer-display">{displayTime}</div>
+        )}
 
         {status === "idle" && (
           <button className="btn btn-primary" onClick={startTimer}>Start ⏱️</button>

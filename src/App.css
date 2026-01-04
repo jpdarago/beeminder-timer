@@ -150,6 +150,17 @@ select {
   color: var(--bee-purple-dark);
 }
 
+.timer-display[type="text"] {
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--bee-purple-dark);
+  width: 100%;
+  max-width: 200px;
+}
+
 /* === Duration Buttons === */
 .duration-buttons {
   display: flex;
