@@ -233,9 +233,14 @@ const App: React.FC = () => {
   }, [remaining, status, username, authToken, goalSlug, comment, selectedDuration]);
 
   const startTimer = () => {
-    if (!username || !authToken || !goalSlug) {
+    if (!goalSlug) {
       setStatus("error");
-      setError("Username, auth token and goal slug are required to start.");
+      setError("You must select a goal first.");
+      return;
+    }
+    if (!username || !authToken) {
+      setStatus("error");
+      setError("Username and auth token are required to start.");
       return;
     }
     setError(null);
@@ -391,6 +396,8 @@ const App: React.FC = () => {
       <section>
         <h2>Timer</h2>
 
+        {error && <div className="error-text">{error}</div>}
+
         <div className="duration-buttons">
           {durations.map(duration => (
             <button
@@ -437,7 +444,6 @@ const App: React.FC = () => {
             <button className="btn btn-secondary" onClick={resetAfterFinish}>Reset</button>
           )}
 
-        {error && <div className="error-text">{error}</div>}
       </section>
 
       <section>
