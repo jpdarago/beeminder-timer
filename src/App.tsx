@@ -27,6 +27,17 @@ type StoredGoals = {
 
 const SETTINGS_KEY = "beeminderTimerSettings";
 const GOALS_KEY = "beeminderTimerGoals";
+const TIMER_STATE_KEY = "beeminderTimerState";
+
+type StoredTimerState = {
+  status: Status;
+  remaining: number;
+  deadline: number | null;
+  paused: boolean;
+  goalSlug: string;
+  selectedDuration: number;
+  comment: string;
+};
 
 function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60)
@@ -111,6 +122,22 @@ const App: React.FC = () => {
         const parsed = JSON.parse(rawGoals) as StoredGoals;
         setGoals(parsed.goals ?? []);
         setLastGoalsUpdate(parsed.updatedAt ?? null);
+      }
+    } catch {
+      // ignore
+    }
+
+    try {
+      const rawTimerState = localStorage.getItem(TIMER_STATE_KEY);
+      if (rawTimerState) {
+        const parsed = JSON.parse(rawTimerState) as StoredTimerState;
+        setStatus(parsed.status);
+        setRemaining(parsed.remaining);
+        setDeadline(parsed.deadline);
+        setPaused(parsed.paused);
+        setGoalSlug(parsed.goalSlug || "");
+        setSelectedDuration(parsed.selectedDuration || 0);
+        setComment(parsed.comment || "");
       }
     } catch {
       // ignore
@@ -215,6 +242,8 @@ const App: React.FC = () => {
 
         setStatus("finished");
 
+        localStorage.removeItem(TIMER_STATE_KEY);
+
         if ("Notification" in window && Notification.permission === "granted") {
           new Notification("Session complete!", {
             body: `Logged session for ${goalSlug} to Beeminder.`,
@@ -249,6 +278,17 @@ const App: React.FC = () => {
     setRemaining(selectedDuration);
     const now = Date.now();
     setDeadline(now + selectedDuration * 1000);
+
+    const timerState: StoredTimerState = {
+      status: "running",
+      remaining: selectedDuration,
+      deadline: now + selectedDuration * 1000,
+      paused: false,
+      goalSlug,
+      selectedDuration,
+      comment,
+    };
+    localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
   };
 
   const cancelTimer = () => {
@@ -257,6 +297,7 @@ const App: React.FC = () => {
     setStatus("idle");
     setPaused(false);
     setError(null);
+    localStorage.removeItem(TIMER_STATE_KEY);
   };
 
   const resetAfterFinish = () => {
@@ -265,6 +306,7 @@ const App: React.FC = () => {
     setStatus("idle");
     setPaused(false);
     setError(null);
+    localStorage.removeItem(TIMER_STATE_KEY);
   };
 
   const togglePause = () => {
@@ -279,6 +321,17 @@ const App: React.FC = () => {
       setDeadline(now + remaining * 1000);
       setPaused(false);
     }
+
+    const timerState: StoredTimerState = {
+      status,
+      remaining: remaining!,
+      deadline,
+      paused: !paused,
+      goalSlug,
+      selectedDuration,
+      comment,
+    };
+    localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
   };
 
   const saveSettings = () => {
