@@ -334,6 +334,24 @@ const App: React.FC = () => {
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
   };
 
+  // Keyboard shortcut for space bar to start/stop timer
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === ' ') {
+        event.preventDefault();
+        if (!goalSlug || !username || !authToken || selectedDuration <= 0) return;
+        if (status === 'idle') {
+          startTimer();
+        } else if (status === 'running' || paused) {
+          togglePause();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goalSlug, username, authToken, selectedDuration, status, paused, startTimer, togglePause]);
+
   const saveSettings = () => {
     const settings: StoredSettings = { username, authToken, goalSlug };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
