@@ -413,6 +413,12 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === ' ') {
+        // Don't intercept space if an input or textarea is focused
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
+          return;
+        }
+
         event.preventDefault();
         if (!goalSlug || !username || !authToken || selectedDuration <= 0) return;
         if (status === 'idle') {
