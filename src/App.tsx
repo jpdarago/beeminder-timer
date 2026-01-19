@@ -3,6 +3,8 @@ import "./App.css";
 
 const THIRTY_MINUTES = 30 * 60; // seconds
 
+const GOAL_STALENESS_TIME = 24 * 60 * 60 * 1000; // 24 hours in ms
+
 const ding = new Audio("notification.mp3");
 ding.volume = 0.7;
 
@@ -432,6 +434,19 @@ const App: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [goalSlug, username, authToken, selectedDuration, status, paused, startTimer, togglePause]);
+
+  // Auto-refresh goals if stale or never fetched.
+  useEffect(() => {
+    if (!username || !authToken) {
+      return;
+    }
+
+    const shouldRefresh = lastGoalsUpdate === null || (Date.now() - lastGoalsUpdate > GOAL_STALENESS_TIME);
+
+    if (shouldRefresh) {
+      refreshGoals();
+    }
+  }, [username, authToken]);
 
   const saveSettings = () => {
     const settings: StoredSettings = { username, authToken, goalSlug };
