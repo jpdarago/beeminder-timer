@@ -448,6 +448,13 @@ const App: React.FC = () => {
     }
   }, [username, authToken]);
 
+  // Auto-select first goal if goalSlug is empty and we have goals
+  useEffect(() => {
+    if (!goalSlug && goals.length > 0) {
+      setGoalSlug(goals[0].slug);
+    }
+  }, [goals, goalSlug]);
+
   const saveSettings = () => {
     const settings: StoredSettings = { username, authToken, goalSlug };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -528,18 +535,19 @@ const App: React.FC = () => {
         <label>
           <b> Goal </b>
           <select
-            value={goalSlug}
+            value={goalSlug || (goals.length > 0 ? goals[0].slug : "")}
             onChange={e => setGoalSlug(e.target.value)}
             disabled={running || goals.length === 0}
           >
-            <option value="">
-              {goals.length === 0 ? "No goals loaded" : "Select a goal…"}
-            </option>
-            {goals.map(g => (
-              <option key={g.slug} value={g.slug}>
-                {(g.title ?? g.slug) + " (" + g.slug + ")"}
-              </option>
-              ))}
+            {goals.length === 0 ? (
+              <option value="">No goals loaded</option>
+            ) : (
+              goals.map(g => (
+                <option key={g.slug} value={g.slug}>
+                  {(g.title ?? g.slug) + " (" + g.slug + ")"}
+                </option>
+              ))
+            )}
             </select>
           </label>
 
