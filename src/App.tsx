@@ -89,6 +89,8 @@ const App: React.FC = () => {
 
   const [selectedDuration, setSelectedDuration] = useState(THIRTY_MINUTES);
 
+  const [flushMessage, setFlushMessage] = useState<string | null>(null);
+
   const durations = [5, 10, 20, 30, 45, 60]; // minutes
 
   const running = status === "running";
@@ -273,6 +275,7 @@ const App: React.FC = () => {
       return;
     }
     setError(null);
+    setFlushMessage(null);
     setStatus("running");
     setPaused(false);
     setRemaining(selectedDuration);
@@ -297,6 +300,7 @@ const App: React.FC = () => {
     setStatus("idle");
     setPaused(false);
     setError(null);
+    setFlushMessage(null);
     localStorage.removeItem(TIMER_STATE_KEY);
   };
 
@@ -306,6 +310,7 @@ const App: React.FC = () => {
     setStatus("idle");
     setPaused(false);
     setError(null);
+    setFlushMessage(null);
     localStorage.removeItem(TIMER_STATE_KEY);
   };
 
@@ -332,6 +337,76 @@ const App: React.FC = () => {
       comment,
     };
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
+  };
+
+  const flushTimer = async () => {
+    if (remaining === null || selectedDuration <= 0 || !username || !authToken || !goalSlug) return;
+
+    const elapsed = selectedDuration - remaining;
+    if (elapsed <= 0) {
+      setFlushMessage("No time elapsed to flush.");
+      return;
+    }
+
+    try {
+      setStatus("posting");
+      setError(null);
+
+      const endpoint = `https://www.beeminder.com/api/v1/users/${encodeURIComponent(
+        username
+      )}/goals/${encodeURIComponent(goalSlug)}/datapoints.json`;
+
+      const value = elapsed / 60;
+      const actualComment = `Flushed timer: ${value.toFixed(2)} minutes`;
+
+      const params = new URLSearchParams({
+        auth_token: authToken,
+        value: value.toString(),
+        comment: actualComment,
+        timestamp: Math.floor(Date.now() / 1000).toString(),
+      });
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params.toString(),
+      });
+
+      const text = await res.text();
+
+      if (!res.ok) {
+        throw new Error(`Beeminder error ${res.status}: ${text}`);
+      }
+
+      try {
+        ding.currentTime = 0;
+        void ding.play();
+      } catch {
+        // ignore
+      }
+
+      setDeadline(null);
+      setRemaining(null);
+      setStatus("idle");
+      setPaused(false);
+      localStorage.removeItem(TIMER_STATE_KEY);
+
+      setFlushMessage(`Logged ${value.toFixed(2)} minutes to Beeminder.`);
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Timer flushed!", {
+          body: `Logged ${value.toFixed(2)} minutes for ${goalSlug} to Beeminder.`,
+          icon: "bee.svg",
+          silent: false,
+          requireInteraction: false
+        });
+      }
+    } catch (e) {
+      setStatus("error");
+      setError((e as Error).message);
+    }
   };
 
   // Keyboard shortcut for space bar to start/stop timer
@@ -512,6 +587,8 @@ const App: React.FC = () => {
           <div className="timer-display">{displayTime}</div>
         )}
 
+        {flushMessage && <div className="status-text">{flushMessage}</div>}
+
         {status === "idle" && (
           <button className="btn btn-primary" onClick={startTimer}>Start ⏱️</button>
         )}
@@ -522,6 +599,7 @@ const App: React.FC = () => {
               {paused ? "▶️" : "⏸️"}
               </button>
             <button className="btn btn-secondary" onClick={cancelTimer}>❌</button>
+            <button className="btn btn-secondary" onClick={flushTimer}>📤</button>
           </>
         )}
 
