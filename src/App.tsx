@@ -130,8 +130,24 @@ const App: React.FC = () => {
       const rawGoals = localStorage.getItem(GOALS_KEY);
       if (rawGoals) {
         const parsed = JSON.parse(rawGoals) as StoredGoals;
-        setGoals(parsed.goals ?? []);
+        const loadedGoals = parsed.goals ?? [];
+        setGoals(loadedGoals);
         setLastGoalsUpdate(parsed.updatedAt ?? null);
+
+        // Validate that saved goalSlug exists in the goals list
+        try {
+          const rawSettings = localStorage.getItem(SETTINGS_KEY);
+          if (rawSettings) {
+            const settings = JSON.parse(rawSettings) as StoredSettings;
+            const savedGoalSlug = settings.goalSlug ?? "";
+            if (savedGoalSlug && !loadedGoals.some(goal => goal.slug === savedGoalSlug)) {
+              console.log("Saved goal slug not found in goals list, clearing:", savedGoalSlug);
+              setGoalSlug("");
+            }
+          }
+        } catch {
+          // ignore
+        }
       }
     } catch {
       // ignore
@@ -519,6 +535,12 @@ const App: React.FC = () => {
       setGoals(filteredGoals);
       const now = Date.now();
       setLastGoalsUpdate(now);
+
+      // Clear goalSlug if it no longer exists in the refreshed goals
+      if (goalSlug && !filteredGoals.some(goal => goal.slug === goalSlug)) {
+        console.log("Previously selected goal no longer exists, clearing:", goalSlug);
+        setGoalSlug("");
+      }
 
       const toStore: StoredGoals = {
         goals: filteredGoals,
