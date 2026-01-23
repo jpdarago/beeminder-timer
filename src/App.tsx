@@ -107,6 +107,12 @@ const App: React.FC = () => {
         const loadedToken = parsed.authToken ?? "";
         const loadedGoalSlug = parsed.goalSlug ?? "";
 
+        console.log("Loaded saved settings on startup:", {
+          username: loadedUsername,
+          authToken: loadedToken ? "***" : "(none)",
+          goalSlug: loadedGoalSlug,
+        });
+
         setUsername(loadedUsername);
         setAuthToken(loadedToken);
         setGoalSlug(loadedGoalSlug);
@@ -223,6 +229,13 @@ const App: React.FC = () => {
           timestamp: Math.floor(Date.now() / 1000).toString(),
         });
 
+        console.log("Posting to Beeminder:", {
+          endpoint,
+          value: selectedDuration / 60,
+          comment: actualComment,
+          goalSlug,
+        });
+
         const res = await fetch(endpoint, {
           method: "POST",
           headers: {
@@ -232,6 +245,7 @@ const App: React.FC = () => {
         });
 
         const text = await res.text();
+        console.log("Beeminder response:", { status: res.status, body: text });
 
         if (!res.ok) {
           throw new Error(`Beeminder error ${res.status}: ${text}`);
@@ -368,6 +382,13 @@ const App: React.FC = () => {
         timestamp: Math.floor(Date.now() / 1000).toString(),
       });
 
+      console.log("Flushing timer to Beeminder:", {
+        endpoint,
+        value: value.toFixed(2),
+        comment: actualComment,
+        goalSlug,
+      });
+
       const res = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -377,6 +398,7 @@ const App: React.FC = () => {
       });
 
       const text = await res.text();
+      console.log("Beeminder response:", { status: res.status, body: text });
 
       if (!res.ok) {
         throw new Error(`Beeminder error ${res.status}: ${text}`);
@@ -482,8 +504,11 @@ const App: React.FC = () => {
         username
       )}/goals.json?auth_token=${encodeURIComponent(authToken)}`;
 
+      console.log("Fetching goals from Beeminder:", { endpoint, username });
+
       const res = await fetch(endpoint);
       const text = await res.text();
+      console.log("Beeminder goals response:", { status: res.status, body: text });
 
       if (!res.ok) {
         throw new Error(`Beeminder goals error ${res.status}: ${text}`);
