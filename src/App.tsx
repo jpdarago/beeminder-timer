@@ -93,7 +93,7 @@ const App: React.FC = () => {
 
   const [flushMessage, setFlushMessage] = useState<string | null>(null);
 
-  const durations = [5, 10, 20, 30, 45, 60]; // minutes
+  const durations = [5, 10, 15, 20, 30, 45, 60]; // minutes
 
   const running = status === "running";
 
