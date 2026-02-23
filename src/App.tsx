@@ -1,567 +1,66 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "./App.css";
-
-const THIRTY_MINUTES = 30 * 60; // seconds
-
-const GOAL_STALENESS_TIME = 24 * 60 * 60 * 1000; // 24 hours in ms
-
-const ding = new Audio("notification.mp3");
-ding.volume = 0.7;
-
-type Status = "idle" | "running" | "posting" | "finished" | "error";
-
-type BeeminderGoal = {
-  slug: string;
-  title?: string;
-  gunits?: string;
-};
-
-type StoredSettings = {
-  username: string;
-  authToken: string;
-  goalSlug: string;
-};
-
-type StoredGoals = {
-  goals: BeeminderGoal[];
-  updatedAt: number; // unix timestamp ms
-};
-
-const SETTINGS_KEY = "beeminderTimerSettings";
-const GOALS_KEY = "beeminderTimerGoals";
-const TIMER_STATE_KEY = "beeminderTimerState";
-
-type StoredTimerState = {
-  status: Status;
-  remaining: number;
-  deadline: number | null;
-  paused: boolean;
-  goalSlug: string;
-  selectedDuration: number;
-  comment: string;
-};
-
-function formatTime(totalSeconds: number): string {
-  const m = Math.floor(totalSeconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = (totalSeconds % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
-
-const getYouTubeTitle = async (url: string): Promise<string | null> => {
-  const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/)watch\?v=(.*)(?:&.*)?/);
-  if (!match) return null;
-  const videoId = match[1];
-  console.log('Fetching YouTube title for video ID:', videoId);
-  try {
-    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
-    if (res.ok) {
-      const data = await res.json();
-      return data.title;
-    }
-  } catch (e) {
-    console.error('Failed to fetch YouTube title:', e);
-  }
-  return null;
-};
+import { THIRTY_MINUTES, durations } from "./constants.ts";
+import { getYouTubeTitle } from "./utils.ts";
+import { useSettings } from "./hooks/useSettings.ts";
+import { useBeeminder } from "./hooks/useBeeminder.ts";
+import { useTimer, loadPersistedTimerState } from "./hooks/useTimer.ts";
 
 const App: React.FC = () => {
-  const [remaining, setRemaining] = useState<number | null>(null);
-  const [deadline, setDeadline] = useState<number | null>(null);
-
-  const [status, setStatus] = useState<Status>("idle");
-  const [error, setError] = useState<string | null>(null);
-
-  const [paused, setPaused] = useState(false);
-
-  const [username, setUsername] = useState("");
-  const [authToken, setAuthToken] = useState("");
-  const [goalSlug, setGoalSlug] = useState("");
-  const [comment, setComment] = useState("");
+  const [persistedTimer] = useState(loadPersistedTimerState);
+  const [selectedDuration, setSelectedDuration] = useState(
+    persistedTimer?.selectedDuration ?? THIRTY_MINUTES
+  );
+  const [comment, setComment] = useState(persistedTimer?.comment ?? "");
   const [youtubeTitle, setYoutubeTitle] = useState<string | null>(null);
 
-  const [goals, setGoals] = useState<BeeminderGoal[]>([]);
-  const [loadingGoals, setLoadingGoals] = useState(false);
-  const [goalsError, setGoalsError] = useState<string | null>(null);
-  const [lastGoalsUpdate, setLastGoalsUpdate] = useState<number | null>(null);
+  const settings = useSettings();
+  const { username, authToken } = settings;
 
-  const [hasStoredSettings, setHasStoredSettings] = useState(false);
-  const [showSettingsForm, setShowSettingsForm] = useState(true);
+  const beeminder = useBeeminder(username, authToken);
+  const { goalSlug, goals } = beeminder;
 
-  const [selectedDuration, setSelectedDuration] = useState(THIRTY_MINUTES);
-
-  const [flushMessage, setFlushMessage] = useState<string | null>(null);
-
-  const durations = [5, 10, 15, 20, 30, 45, 60]; // minutes
-
-  const running = status === "running";
-
-  // Load saved settings + goals from localStorage
+  // Apply persisted goalSlug from timer state (overrides beeminder's default)
   useEffect(() => {
-    try {
-      const rawSettings = localStorage.getItem(SETTINGS_KEY);
-      if (rawSettings) {
-        const parsed = JSON.parse(rawSettings) as StoredSettings;
-        const loadedUsername = parsed.username ?? "";
-        const loadedToken = parsed.authToken ?? "";
-        const loadedGoalSlug = parsed.goalSlug ?? "";
-
-        console.log("Loaded saved settings on startup:", {
-          username: loadedUsername,
-          authToken: loadedToken ? "***" : "(none)",
-          goalSlug: loadedGoalSlug,
-        });
-
-        setUsername(loadedUsername);
-        setAuthToken(loadedToken);
-        setGoalSlug(loadedGoalSlug);
-
-        if (loadedUsername && loadedToken) {
-          setHasStoredSettings(true);
-          setShowSettingsForm(false); // hide form by default if settings exist
-        }
-      }
-    } catch {
-      // ignore
+    if (persistedTimer?.goalSlug) {
+      beeminder.setGoalSlug(persistedTimer.goalSlug);
     }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    try {
-      const rawGoals = localStorage.getItem(GOALS_KEY);
-      if (rawGoals) {
-        const parsed = JSON.parse(rawGoals) as StoredGoals;
-        const loadedGoals = parsed.goals ?? [];
-        setGoals(loadedGoals);
-        setLastGoalsUpdate(parsed.updatedAt ?? null);
+  const onComplete = useCallback(async () => {
+    const actualComment = comment.trim() || `${selectedDuration / 60}-minutes focus session`;
+    await beeminder.postDatapoint(selectedDuration / 60, actualComment);
+  }, [comment, selectedDuration, beeminder]);
 
-        // Validate that saved goalSlug exists in the goals list
-        try {
-          const rawSettings = localStorage.getItem(SETTINGS_KEY);
-          if (rawSettings) {
-            const settings = JSON.parse(rawSettings) as StoredSettings;
-            const savedGoalSlug = settings.goalSlug ?? "";
-            if (savedGoalSlug && !loadedGoals.some(goal => goal.slug === savedGoalSlug)) {
-              console.log("Saved goal slug not found in goals list, clearing:", savedGoalSlug);
-              setGoalSlug("");
-            }
-          }
-        } catch {
-          // ignore
-        }
-      }
-    } catch {
-      // ignore
-    }
+  const onFlush = useCallback(async (elapsed: number) => {
+    const value = elapsed / 60;
+    const actualComment = `Flushed timer: ${value.toFixed(2)} minutes`;
+    await beeminder.postDatapoint(value, actualComment);
+  }, [beeminder]);
 
-    try {
-      const rawTimerState = localStorage.getItem(TIMER_STATE_KEY);
-      if (rawTimerState) {
-        const parsed = JSON.parse(rawTimerState) as StoredTimerState;
-        setStatus(parsed.status);
-        setRemaining(parsed.remaining);
-        setDeadline(parsed.deadline);
-        setPaused(parsed.paused);
-        setGoalSlug(parsed.goalSlug || "");
-        setSelectedDuration(parsed.selectedDuration || 0);
-        setComment(parsed.comment || "");
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  // Change the tab title to show the timer
-  useEffect(() => {
-    // When there's no timer running, show the default title
-    if (remaining === null || remaining <= 0) {
-      document.title = "Beeminder Timer";
-      return;
-    }
-
-    // Format the time like 25:03 or 00:17
-    const m = Math.floor(remaining / 60).toString().padStart(2, "0");
-    const s = (remaining % 60).toString().padStart(2, "0");
-
-    document.title = `${m}:${s} · Beeminder Timer`;
-  }, [remaining]);
-
-  // Ask for notification permission once
-  useEffect(() => {
-    if ("Notification" in window) {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
+  const timer = useTimer({
+    selectedDuration,
+    goalSlug,
+    username,
+    authToken,
+    comment,
+    onComplete,
+    onFlush,
+  });
 
   // Fetch YouTube title if comment is a YouTube URL
   useEffect(() => {
-    if (comment.trim()) {
-      getYouTubeTitle(comment.trim()).then(setYoutubeTitle);
-    } else {
-      setYoutubeTitle(null);
-    }
+    const trimmed = comment.trim();
+    if (!trimmed) return;
+    getYouTubeTitle(trimmed).then(setYoutubeTitle);
   }, [comment]);
 
-  // Countdown effect with pause support
-  useEffect(() => {
-    if (status !== "running" || deadline === null) return;
-
-    const id = window.setInterval(() => {
-      const msLeft = deadline - Date.now();
-      const secsLeft = Math.max(0, Math.round(msLeft / 1000));
-      setRemaining(secsLeft);
-      if (secsLeft <= 0) {
-        window.clearInterval(id);
-      }
-    }, 250); // 4x per second; drift-free because we recompute from deadline
-
-    return () => window.clearInterval(id);
-  }, [status, deadline]);
-
-  // When timer reaches 0, call Beeminder directly
-  useEffect(() => {
-    if (remaining !== 0 || status === "posting" || status === "finished") return;
-
-    if (!username || !authToken || !goalSlug) {
-      setStatus("error");
-      setError("Username, auth token and goal slug are required.");
-      return;
-    }
-
-    const postToBeeminder = async () => {
-      try {
-        setStatus("posting");
-        setError(null);
-
-        const endpoint = `https://www.beeminder.com/api/v1/users/${encodeURIComponent(
-          username
-        )}/goals/${encodeURIComponent(goalSlug)}/datapoints.json`;
-
-        const actualComment = comment.trim() || `${selectedDuration / 60}-minutes focus session`;
-
-        const params = new URLSearchParams({
-          auth_token: authToken,
-          value: (selectedDuration / 60).toString(),
-          comment: actualComment,
-          timestamp: Math.floor(Date.now() / 1000).toString(),
-        });
-
-        console.log("Posting to Beeminder:", {
-          endpoint,
-          value: selectedDuration / 60,
-          comment: actualComment,
-          goalSlug,
-        });
-
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: params.toString(),
-        });
-
-        const text = await res.text();
-        console.log("Beeminder response:", { status: res.status, body: text });
-
-        if (!res.ok) {
-          throw new Error(`Beeminder error ${res.status}: ${text}`);
-        }
-
-        try {
-          ding.currentTime = 0;
-          void ding.play();
-        } catch {
-          // ignore
-        }
-
-        setStatus("finished");
-
-        localStorage.removeItem(TIMER_STATE_KEY);
-
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification("Session complete!", {
-            body: `Logged session for ${goalSlug} to Beeminder.`,
-            icon: "bee.svg",
-            silent: false,
-            requireInteraction: false
-          });
-        }
-      } catch (e) {
-        setStatus("error");
-        setError((e as Error).message);
-      }
-    };
-
-    postToBeeminder();
-  }, [remaining, status, username, authToken, goalSlug, comment, selectedDuration]);
-
-  const startTimer = () => {
-    if (!goalSlug) {
-      setStatus("error");
-      setError("You must select a goal first.");
-      return;
-    }
-    if (!username || !authToken) {
-      setStatus("error");
-      setError("Username and auth token are required to start.");
-      return;
-    }
-    setError(null);
-    setFlushMessage(null);
-    setStatus("running");
-    setPaused(false);
-    setRemaining(selectedDuration);
-    const now = Date.now();
-    setDeadline(now + selectedDuration * 1000);
-
-    const timerState: StoredTimerState = {
-      status: "running",
-      remaining: selectedDuration,
-      deadline: now + selectedDuration * 1000,
-      paused: false,
-      goalSlug,
-      selectedDuration,
-      comment,
-    };
-    localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
-  };
-
-  const cancelTimer = () => {
-    if (!window.confirm("Cancel the current session? Elapsed time will not be logged.")) return;
-    setDeadline(null);
-    setRemaining(null);
-    setStatus("idle");
-    setPaused(false);
-    setError(null);
-    setFlushMessage(null);
-    localStorage.removeItem(TIMER_STATE_KEY);
-  };
-
-  const resetAfterFinish = () => {
-    setDeadline(null);
-    setRemaining(null);
-    setStatus("idle");
-    setPaused(false);
-    setError(null);
-    setFlushMessage(null);
-    localStorage.removeItem(TIMER_STATE_KEY);
-  };
-
-  const togglePause = () => {
-    if (remaining === null) return;
-    if (!paused) {
-      // pause: freeze remaining, drop deadline
-      setDeadline(null);
-      setPaused(true);
-    } else {
-      // resume: set new deadline based on remaining
-      const now = Date.now();
-      setDeadline(now + remaining * 1000);
-      setPaused(false);
-    }
-
-    const timerState: StoredTimerState = {
-      status,
-      remaining: remaining!,
-      deadline,
-      paused: !paused,
-      goalSlug,
-      selectedDuration,
-      comment,
-    };
-    localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
-  };
-
-  const flushTimer = async () => {
-    if (remaining === null || selectedDuration <= 0 || !username || !authToken || !goalSlug) return;
-
-    const elapsed = selectedDuration - remaining;
-    if (elapsed <= 0) {
-      setFlushMessage("No time elapsed to flush.");
-      return;
-    }
-
-    try {
-      setStatus("posting");
-      setError(null);
-
-      const endpoint = `https://www.beeminder.com/api/v1/users/${encodeURIComponent(
-        username
-      )}/goals/${encodeURIComponent(goalSlug)}/datapoints.json`;
-
-      const value = elapsed / 60;
-      const actualComment = `Flushed timer: ${value.toFixed(2)} minutes`;
-
-      const params = new URLSearchParams({
-        auth_token: authToken,
-        value: value.toString(),
-        comment: actualComment,
-        timestamp: Math.floor(Date.now() / 1000).toString(),
-      });
-
-      console.log("Flushing timer to Beeminder:", {
-        endpoint,
-        value: value.toFixed(2),
-        comment: actualComment,
-        goalSlug,
-      });
-
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: params.toString(),
-      });
-
-      const text = await res.text();
-      console.log("Beeminder response:", { status: res.status, body: text });
-
-      if (!res.ok) {
-        throw new Error(`Beeminder error ${res.status}: ${text}`);
-      }
-
-      try {
-        ding.currentTime = 0;
-        void ding.play();
-      } catch {
-        // ignore
-      }
-
-      setDeadline(null);
-      setRemaining(null);
-      setStatus("idle");
-      setPaused(false);
-      localStorage.removeItem(TIMER_STATE_KEY);
-
-      setFlushMessage(`Logged ${value.toFixed(2)} minutes to Beeminder.`);
-
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("Timer flushed!", {
-          body: `Logged ${value.toFixed(2)} minutes for ${goalSlug} to Beeminder.`,
-          icon: "bee.svg",
-          silent: false,
-          requireInteraction: false
-        });
-      }
-    } catch (e) {
-      setStatus("error");
-      setError((e as Error).message);
-    }
-  };
-
-  // Keyboard shortcut for space bar to start/stop timer
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === ' ') {
-        // Don't intercept space if an input or textarea is focused
-        const activeElement = document.activeElement;
-        if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
-          return;
-        }
-
-        event.preventDefault();
-        if (!goalSlug || !username || !authToken || selectedDuration <= 0) return;
-        if (status === 'idle') {
-          startTimer();
-        } else if (status === 'running' || paused) {
-          togglePause();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goalSlug, username, authToken, selectedDuration, status, paused, startTimer, togglePause]);
-
-  // Auto-refresh goals if stale or never fetched.
-  useEffect(() => {
-    if (!username || !authToken) {
-      return;
-    }
-
-    const shouldRefresh = lastGoalsUpdate === null || (Date.now() - lastGoalsUpdate > GOAL_STALENESS_TIME);
-
-    if (shouldRefresh) {
-      refreshGoals();
-    }
-  }, [username, authToken]);
-
-  // Auto-select first goal if goalSlug is empty and we have goals
-  useEffect(() => {
-    if (!goalSlug && goals.length > 0) {
-      setGoalSlug(goals[0].slug);
-    }
-  }, [goals, goalSlug]);
-
-  const saveSettings = () => {
-    const settings: StoredSettings = { username, authToken, goalSlug };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    if (username && authToken) {
-      setHasStoredSettings(true);
-      setShowSettingsForm(false);
-    }
-  };
-
-  const displayTime =
-    remaining === null ? formatTime(selectedDuration) : formatTime(remaining);
-
-  // Fetch goals from Beeminder and cache locally
-  const refreshGoals = async () => {
-    if (!username || !authToken) {
-      setGoalsError("Username and auth token are required to load goals.");
-      return;
-    }
-
-    try {
-      setLoadingGoals(true);
-      setGoalsError(null);
-
-      const endpoint = `https://www.beeminder.com/api/v1/users/${encodeURIComponent(
-        username
-      )}/goals.json?auth_token=${encodeURIComponent(authToken)}`;
-
-      console.log("Fetching goals from Beeminder:", { endpoint, username });
-
-      const res = await fetch(endpoint);
-      const text = await res.text();
-      console.log("Beeminder goals response:", { status: res.status, body: text });
-
-      if (!res.ok) {
-        throw new Error(`Beeminder goals error ${res.status}: ${text}`);
-      }
-
-      const parsed = JSON.parse(text) as BeeminderGoal[];
-      const filteredGoals = parsed.filter(goal => goal.gunits === 'minutes');
-      setGoals(filteredGoals);
-      const now = Date.now();
-      setLastGoalsUpdate(now);
-
-      // Clear goalSlug if it no longer exists in the refreshed goals
-      if (goalSlug && !filteredGoals.some(goal => goal.slug === goalSlug)) {
-        console.log("Previously selected goal no longer exists, clearing:", goalSlug);
-        setGoalSlug("");
-      }
-
-      const toStore: StoredGoals = {
-        goals: filteredGoals,
-        updatedAt: now,
-      };
-      localStorage.setItem(GOALS_KEY, JSON.stringify(toStore));
-
-      if (!goalSlug && filteredGoals.length > 0) {
-        setGoalSlug(filteredGoals[0].slug);
-      }
-    } catch (e) {
-      setGoalsError((e as Error).message);
-    } finally {
-      setLoadingGoals(false);
-    }
-  };
+  // Clear YouTube title when comment is cleared (separate to avoid set-state-in-effect)
+  const youtubeDisplay = comment.trim() ? youtubeTitle : null;
 
   const lastUpdateLabel =
-    lastGoalsUpdate != null
-      ? new Date(lastGoalsUpdate).toLocaleString()
+    beeminder.lastGoalsUpdate != null
+      ? new Date(beeminder.lastGoalsUpdate).toLocaleString()
       : "never";
 
   return (
@@ -584,8 +83,8 @@ const App: React.FC = () => {
           <b> Goal </b>
           <select
             value={goalSlug || (goals.length > 0 ? goals[0].slug : "")}
-            onChange={e => setGoalSlug(e.target.value)}
-            disabled={running || goals.length === 0}
+            onChange={e => beeminder.setGoalSlug(e.target.value)}
+            disabled={timer.running || goals.length === 0}
           >
             {goals.length === 0 ? (
               <option value="">No goals loaded</option>
@@ -604,14 +103,14 @@ const App: React.FC = () => {
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={refreshGoals}
-            disabled={running || loadingGoals}
+            onClick={beeminder.refreshGoals}
+            disabled={timer.running || beeminder.loadingGoals}
             aria-label="Refresh goals from Beeminder"
           >
             Refresh goals 🔄
           </button>
 
-          {goalsError && <div className="error-text">{goalsError}</div>}
+          {beeminder.goalsError && <div className="error-text">{beeminder.goalsError}</div>}
 
 
         </section>
@@ -619,7 +118,7 @@ const App: React.FC = () => {
       <section>
         <h2>Timer</h2>
 
-        {error && <div className="error-text">{error}</div>}
+        {timer.error && <div className="error-text">{timer.error}</div>}
 
         <div className="duration-buttons">
           {durations.map(duration => (
@@ -627,7 +126,7 @@ const App: React.FC = () => {
               key={duration}
               className="btn btn-secondary"
               onClick={() => setSelectedDuration(duration * 60)}
-              disabled={running}
+              disabled={timer.running}
             >
               {duration} min
             </button>
@@ -641,12 +140,12 @@ const App: React.FC = () => {
             value={comment}
             placeholder={`${selectedDuration / 60}-minutes focus session`}
             onChange={e => setComment(e.target.value)}
-            disabled={running}
+            disabled={timer.running}
           />
         </label>
-        {youtubeTitle && <div className="youtube-title">YouTube Title: {youtubeTitle}</div>}
+        {youtubeDisplay && <div className="youtube-title">YouTube Title: {youtubeDisplay}</div>}
 
-        {status === "idle" ? (
+        {timer.status === "idle" ? (
           <div>
             <input
               className="timer-display"
@@ -661,29 +160,29 @@ const App: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="timer-display">{displayTime}</div>
+          <div className="timer-display">{timer.displayTime}</div>
         )}
 
-        {flushMessage && <div className="status-text">{flushMessage}</div>}
+        {timer.flushMessage && <div className="status-text">{timer.flushMessage}</div>}
 
-        {status === "idle" && (
-          <button className="btn btn-primary" onClick={startTimer}>Start ⏱️</button>
+        {timer.status === "idle" && (
+          <button className="btn btn-primary" onClick={timer.startTimer}>Start ⏱️</button>
         )}
 
-        {status === "running" && (
+        {timer.status === "running" && (
           <>
-            <button className="btn btn-secondary" onClick={togglePause}>
-              {paused ? "▶️" : "⏸️"}
+            <button className="btn btn-secondary" onClick={timer.togglePause}>
+              {timer.paused ? "▶️" : "⏸️"}
               </button>
-            <button className="btn btn-secondary" onClick={cancelTimer}>❌</button>
-            <button className="btn btn-secondary" onClick={flushTimer}>📤</button>
+            <button className="btn btn-secondary" onClick={timer.cancelTimer}>❌</button>
+            <button className="btn btn-secondary" onClick={timer.flushTimer}>📤</button>
           </>
         )}
 
-        {(status === "finished" ||
-          status === "posting" ||
-          status === "error") && (
-            <button className="btn btn-secondary" onClick={resetAfterFinish}>Reset</button>
+        {(timer.status === "finished" ||
+          timer.status === "posting" ||
+          timer.status === "error") && (
+            <button className="btn btn-secondary" onClick={timer.resetAfterFinish}>Reset</button>
           )}
 
       </section>
@@ -691,7 +190,7 @@ const App: React.FC = () => {
       <section>
         <h2>Beeminder settings</h2>
 
-        {hasStoredSettings && !showSettingsForm && (
+        {settings.hasStoredSettings && !settings.showSettingsForm && (
           <>
             <div className="status-text">
               Using stored settings for user <code>{username}</code>.
@@ -699,23 +198,23 @@ const App: React.FC = () => {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => setShowSettingsForm(true)}
-              disabled={running}
+              onClick={() => settings.setShowSettingsForm(true)}
+              disabled={timer.running}
             >
               ✏️ Edit settings
             </button>
           </>
         )}
 
-        {(!hasStoredSettings || showSettingsForm) && (
+        {(!settings.hasStoredSettings || settings.showSettingsForm) && (
           <>
             <label>
               <input
                 type="text"
                 value={username}
                 placeholder="Username..."
-                onChange={e => setUsername(e.target.value)}
-                disabled={running}
+                onChange={e => settings.setUsername(e.target.value)}
+                disabled={timer.running}
               />
             </label>
 
@@ -724,12 +223,12 @@ const App: React.FC = () => {
                 type="password"
                 value={authToken}
                 placeholder="Beeminder API token..."
-                onChange={e => setAuthToken(e.target.value)}
-                disabled={running}
+                onChange={e => settings.setAuthToken(e.target.value)}
+                disabled={timer.running}
               />
             </label>
 
-            <button type="button" className="btn btn-secondary" onClick={saveSettings}>
+            <button type="button" className="btn btn-secondary" onClick={() => settings.saveSettings(goalSlug)}>
               ✅
             </button>
           </>
