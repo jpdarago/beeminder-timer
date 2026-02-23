@@ -327,6 +327,7 @@ const App: React.FC = () => {
   };
 
   const cancelTimer = () => {
+    if (!window.confirm("Cancel the current session? Elapsed time will not be logged.")) return;
     setDeadline(null);
     setRemaining(null);
     setStatus("idle");
