@@ -39,7 +39,6 @@ export async function postBeeminderDatapoint(
   }
 
   const text = await res.text();
-  console.log("Beeminder response:", { status: res.status, body: text });
 
   if (!res.ok) {
     throw new Error(`Beeminder error ${res.status}: ${text}`);
@@ -60,7 +59,6 @@ export const getYouTubeTitle = async (url: string): Promise<string | null> => {
   );
   if (!match) return null;
   const videoId = match[1];
-  console.log("Fetching YouTube title for video ID:", videoId);
   try {
     const res = await fetch(
       `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,

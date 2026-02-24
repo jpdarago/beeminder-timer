@@ -31,7 +31,7 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 
 ## Code quality
 
-- [ ] 14\. Remove `console.log` calls — currently scattered throughout hooks for debugging; strip them or gate behind a debug flag
+- [x] 14\. Remove `console.log` calls — currently scattered throughout hooks for debugging; strip them or gate behind a debug flag
 - [x] 15\. Save goalSlug on selection change — `useBeeminder` manages goalSlug but doesn't persist it to `SETTINGS_KEY` when it changes, only when settings are explicitly saved
 - [ ] 16\. Add `useSettings` tests — the other two hooks have tests but useSettings does not
 - [ ] 17\. Add integration/smoke test — render the full `<App />` component and verify the basic flow (select goal, start timer, see countdown)
