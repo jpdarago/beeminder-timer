@@ -36,15 +36,16 @@ Follow the instructions at the top of `TASKS.md`. Specifically:
 - Plan first, then implement. Run `npm run build` and `npm run lint` to verify your changes compile and lint cleanly.
 - Make incremental commits as you go.
 
-### 4. Create a pull request
+### 4. Mark the task as done
+
+- Edit `TASKS.md`: change `[ ]` to `[x]` for task **#$ARGUMENTS**.
+- Commit this change to the branch with the message: `Mark task $ARGUMENTS as completed in TASKS.md`.
+
+### 5. Create a pull request
 
 - Push the branch and open a PR with `gh pr create`, linking the issue in the body (use `Closes #<issue-number>`).
 - The PR title should be concise and the body should summarize the changes.
-
-### 5. Mark the task as done
-
-- Edit `TASKS.md`: change `[ ]` to `[x]` for task **#$ARGUMENTS**.
-- Commit this change to the PR branch.
+- The PR must include the TASKS.md check-off commit alongside the implementation commits.
 
 ### 6. Report back
 
