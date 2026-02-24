@@ -289,7 +289,7 @@ const App: React.FC = () => {
                 value={username}
                 placeholder="Username..."
                 onChange={(e) => settings.setUsername(e.target.value)}
-                disabled={timer.running}
+                disabled={timer.running || settings.validating}
               />
             </label>
 
@@ -299,16 +299,21 @@ const App: React.FC = () => {
                 value={authToken}
                 placeholder="Beeminder API token..."
                 onChange={(e) => settings.setAuthToken(e.target.value)}
-                disabled={timer.running}
+                disabled={timer.running || settings.validating}
               />
             </label>
+
+            {settings.validationError && (
+              <div className="error-text">{settings.validationError}</div>
+            )}
 
             <button
               type="button"
               className="btn btn-secondary"
               onClick={() => settings.saveSettings(goalSlug)}
+              disabled={settings.validating}
             >
-              ✅
+              {settings.validating ? "Validating…" : "✅"}
             </button>
           </>
         )}
