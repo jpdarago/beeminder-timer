@@ -241,7 +241,7 @@ const App: React.FC = () => {
         )}
 
         {timer.status === "running" && (
-          <>
+          <div className="timer-actions">
             <button className="btn btn-secondary" onClick={timer.togglePause}>
               {timer.paused ? "▶️" : "⏸️"}
             </button>
@@ -251,7 +251,7 @@ const App: React.FC = () => {
             <button className="btn btn-secondary" onClick={timer.flushTimer}>
               📤
             </button>
-          </>
+          </div>
         )}
 
         {(timer.status === "finished" ||
