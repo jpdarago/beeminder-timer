@@ -11,7 +11,7 @@ import { useTheme } from "./hooks/useTheme.ts";
 const App: React.FC = () => {
   const [persistedTimer] = useState(loadPersistedTimerState);
   const [selectedDuration, setSelectedDuration] = useState(
-    persistedTimer?.selectedDuration ?? THIRTY_MINUTES
+    persistedTimer?.selectedDuration ?? THIRTY_MINUTES,
   );
   const [comment, setComment] = useState(persistedTimer?.comment ?? "");
   const [youtubeTitle, setYoutubeTitle] = useState<string | null>(null);
@@ -33,7 +33,8 @@ const App: React.FC = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onComplete = useCallback(async () => {
-    const actualComment = comment.trim() || `${selectedDuration / 60}-minutes focus session`;
+    const actualComment =
+      comment.trim() || `${selectedDuration / 60}-minutes focus session`;
     try {
       await beeminder.postDatapoint(selectedDuration / 60, actualComment);
     } catch (e) {
@@ -51,25 +52,28 @@ const App: React.FC = () => {
     }
   }, [comment, selectedDuration, beeminder, goalSlug, offlineQueue]);
 
-  const onFlush = useCallback(async (elapsed: number) => {
-    const value = elapsed / 60;
-    const actualComment = `Flushed timer: ${value.toFixed(2)} minutes`;
-    try {
-      await beeminder.postDatapoint(value, actualComment);
-    } catch (e) {
-      if (e instanceof NetworkError) {
-        offlineQueue.enqueue({
-          goalSlug,
-          value,
-          comment: actualComment,
-          timestamp: Math.floor(Date.now() / 1000),
-          queuedAt: Date.now(),
-        });
-        return;
+  const onFlush = useCallback(
+    async (elapsed: number) => {
+      const value = elapsed / 60;
+      const actualComment = `Flushed timer: ${value.toFixed(2)} minutes`;
+      try {
+        await beeminder.postDatapoint(value, actualComment);
+      } catch (e) {
+        if (e instanceof NetworkError) {
+          offlineQueue.enqueue({
+            goalSlug,
+            value,
+            comment: actualComment,
+            timestamp: Math.floor(Date.now() / 1000),
+            queuedAt: Date.now(),
+          });
+          return;
+        }
+        throw e;
       }
-      throw e;
-    }
-  }, [beeminder, goalSlug, offlineQueue]);
+    },
+    [beeminder, goalSlug, offlineQueue],
+  );
 
   const timer = useTimer({
     selectedDuration,
@@ -103,50 +107,51 @@ const App: React.FC = () => {
           <img src="bee.svg" alt="Bee timer logo" className="app-logo" />
           <div className="app-heading">
             <h1 className="app-title">Beeminder Timer</h1>
-            <p className="app-subtitle">Focus sessions, logged as datapoints.</p>
+            <p className="app-subtitle">
+              Focus sessions, logged as datapoints.
+            </p>
           </div>
         </div>
       </div>
 
       <section>
-
         <h2>Session</h2>
 
         <label>
           <b> Goal </b>
           <select
             value={goalSlug || (goals.length > 0 ? goals[0].slug : "")}
-            onChange={e => beeminder.setGoalSlug(e.target.value)}
+            onChange={(e) => beeminder.setGoalSlug(e.target.value)}
             disabled={timer.running || goals.length === 0}
           >
             {goals.length === 0 ? (
               <option value="">No goals loaded</option>
             ) : (
-              goals.map(g => (
+              goals.map((g) => (
                 <option key={g.slug} value={g.slug}>
                   {(g.title ?? g.slug) + " (" + g.slug + ")"}
                 </option>
               ))
             )}
-            </select>
-          </label>
+          </select>
+        </label>
 
-          <div className="status-text">Last updated: {lastUpdateLabel}</div>
+        <div className="status-text">Last updated: {lastUpdateLabel}</div>
 
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={beeminder.refreshGoals}
-            disabled={timer.running || beeminder.loadingGoals}
-            aria-label="Refresh goals from Beeminder"
-          >
-            Refresh goals 🔄
-          </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={beeminder.refreshGoals}
+          disabled={timer.running || beeminder.loadingGoals}
+          aria-label="Refresh goals from Beeminder"
+        >
+          Refresh goals 🔄
+        </button>
 
-          {beeminder.goalsError && <div className="error-text">{beeminder.goalsError}</div>}
-
-
-        </section>
+        {beeminder.goalsError && (
+          <div className="error-text">{beeminder.goalsError}</div>
+        )}
+      </section>
 
       <section>
         <h2>Timer</h2>
@@ -154,7 +159,7 @@ const App: React.FC = () => {
         {timer.error && <div className="error-text">{timer.error}</div>}
 
         <div className="duration-buttons">
-          {durations.map(duration => (
+          {durations.map((duration) => (
             <button
               key={duration}
               className="btn btn-secondary"
@@ -172,11 +177,13 @@ const App: React.FC = () => {
             type="text"
             value={comment}
             placeholder={`${selectedDuration / 60}-minutes focus session`}
-            onChange={e => setComment(e.target.value)}
+            onChange={(e) => setComment(e.target.value)}
             disabled={timer.running}
           />
         </label>
-        {youtubeDisplay && <div className="youtube-title">YouTube Title: {youtubeDisplay}</div>}
+        {youtubeDisplay && (
+          <div className="youtube-title">YouTube Title: {youtubeDisplay}</div>
+        )}
 
         {timer.status === "idle" ? (
           <div>
@@ -185,7 +192,7 @@ const App: React.FC = () => {
               type="text"
               min="1"
               value={`${selectedDuration / 60}:00`}
-              onChange={e => {
+              onChange={(e) => {
                 const value = e.target.value.split(":")[0];
                 const minutes = parseInt(value) || 1;
                 setSelectedDuration(minutes * 60);
@@ -196,34 +203,47 @@ const App: React.FC = () => {
           <div className="timer-display">{timer.displayTime}</div>
         )}
 
-        {timer.flushMessage && <div className="status-text">{timer.flushMessage}</div>}
+        {timer.flushMessage && (
+          <div className="status-text">{timer.flushMessage}</div>
+        )}
 
         {timer.status === "idle" && (
-          <button className="btn btn-primary" onClick={timer.startTimer}>Start ⏱️</button>
+          <button className="btn btn-primary" onClick={timer.startTimer}>
+            Start ⏱️
+          </button>
         )}
 
         {timer.status === "running" && (
           <>
             <button className="btn btn-secondary" onClick={timer.togglePause}>
               {timer.paused ? "▶️" : "⏸️"}
-              </button>
-            <button className="btn btn-secondary" onClick={timer.cancelTimer}>❌</button>
-            <button className="btn btn-secondary" onClick={timer.flushTimer}>📤</button>
+            </button>
+            <button className="btn btn-secondary" onClick={timer.cancelTimer}>
+              ❌
+            </button>
+            <button className="btn btn-secondary" onClick={timer.flushTimer}>
+              📤
+            </button>
           </>
         )}
 
         {(timer.status === "finished" ||
           timer.status === "posting" ||
           timer.status === "error") && (
-            <button className="btn btn-secondary" onClick={timer.resetAfterFinish}>Reset</button>
-          )}
-
+          <button
+            className="btn btn-secondary"
+            onClick={timer.resetAfterFinish}
+          >
+            Reset
+          </button>
+        )}
       </section>
 
       {offlineQueue.queue.length > 0 && (
         <section>
           <div className="status-text">
-            {offlineQueue.queue.length} datapoint{offlineQueue.queue.length !== 1 ? "s" : ""} pending
+            {offlineQueue.queue.length} datapoint
+            {offlineQueue.queue.length !== 1 ? "s" : ""} pending
           </div>
           <button
             type="button"
@@ -261,7 +281,7 @@ const App: React.FC = () => {
                 type="text"
                 value={username}
                 placeholder="Username..."
-                onChange={e => settings.setUsername(e.target.value)}
+                onChange={(e) => settings.setUsername(e.target.value)}
                 disabled={timer.running}
               />
             </label>
@@ -271,12 +291,16 @@ const App: React.FC = () => {
                 type="password"
                 value={authToken}
                 placeholder="Beeminder API token..."
-                onChange={e => settings.setAuthToken(e.target.value)}
+                onChange={(e) => settings.setAuthToken(e.target.value)}
                 disabled={timer.running}
               />
             </label>
 
-            <button type="button" className="btn btn-secondary" onClick={() => settings.saveSettings(goalSlug)}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => settings.saveSettings(goalSlug)}
+            >
               ✅
             </button>
           </>
@@ -288,7 +312,9 @@ const App: React.FC = () => {
           <b>Theme</b>
           <select
             value={themePreference}
-            onChange={e => setThemePreference(e.target.value as "system" | "light" | "dark")}
+            onChange={(e) =>
+              setThemePreference(e.target.value as "system" | "light" | "dark")
+            }
           >
             <option value="system">System</option>
             <option value="light">Light</option>

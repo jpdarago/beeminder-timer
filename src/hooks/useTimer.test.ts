@@ -4,13 +4,19 @@ import { useTimer } from "./useTimer.ts";
 import { TIMER_STATE_KEY } from "../constants.ts";
 
 // Mock Audio
-vi.stubGlobal("Audio", vi.fn(() => ({ volume: 0, currentTime: 0, play: vi.fn() })));
+vi.stubGlobal(
+  "Audio",
+  vi.fn(() => ({ volume: 0, currentTime: 0, play: vi.fn() })),
+);
 
 // Mock Notification
-vi.stubGlobal("Notification", Object.assign(vi.fn(), {
-  permission: "granted",
-  requestPermission: vi.fn().mockResolvedValue("granted"),
-}));
+vi.stubGlobal(
+  "Notification",
+  Object.assign(vi.fn(), {
+    permission: "granted",
+    requestPermission: vi.fn().mockResolvedValue("granted"),
+  }),
+);
 
 function makeOptions(overrides: Partial<Parameters<typeof useTimer>[0]> = {}) {
   return {
@@ -47,7 +53,9 @@ describe("useTimer", () => {
   });
 
   it("displays formatted time from selectedDuration when idle", () => {
-    const { result } = renderHook(() => useTimer(makeOptions({ selectedDuration: 600 })));
+    const { result } = renderHook(() =>
+      useTimer(makeOptions({ selectedDuration: 600 })),
+    );
     expect(result.current.displayTime).toBe("10:00");
   });
 
@@ -77,7 +85,9 @@ describe("useTimer", () => {
   });
 
   it("shows error when starting without goal", () => {
-    const { result } = renderHook(() => useTimer(makeOptions({ goalSlug: "" })));
+    const { result } = renderHook(() =>
+      useTimer(makeOptions({ goalSlug: "" })),
+    );
 
     act(() => {
       result.current.startTimer();
@@ -88,7 +98,9 @@ describe("useTimer", () => {
   });
 
   it("shows error when starting without credentials", () => {
-    const { result } = renderHook(() => useTimer(makeOptions({ username: "" })));
+    const { result } = renderHook(() =>
+      useTimer(makeOptions({ username: "" })),
+    );
 
     act(() => {
       result.current.startTimer();
@@ -169,15 +181,18 @@ describe("useTimer", () => {
   });
 
   it("loads persisted timer state on mount", () => {
-    localStorage.setItem(TIMER_STATE_KEY, JSON.stringify({
-      status: "running",
-      remaining: 900,
-      deadline: Date.now() + 900_000,
-      paused: false,
-      goalSlug: "test-goal",
-      selectedDuration: 1800,
-      comment: "",
-    }));
+    localStorage.setItem(
+      TIMER_STATE_KEY,
+      JSON.stringify({
+        status: "running",
+        remaining: 900,
+        deadline: Date.now() + 900_000,
+        paused: false,
+        goalSlug: "test-goal",
+        selectedDuration: 1800,
+        comment: "",
+      }),
+    );
 
     const { result } = renderHook(() => useTimer(makeOptions()));
 
@@ -189,7 +204,9 @@ describe("useTimer", () => {
     const now = Date.now();
     vi.setSystemTime(now);
 
-    const { result } = renderHook(() => useTimer(makeOptions({ selectedDuration: 10 })));
+    const { result } = renderHook(() =>
+      useTimer(makeOptions({ selectedDuration: 10 })),
+    );
 
     act(() => {
       result.current.startTimer();
@@ -209,7 +226,9 @@ describe("useTimer", () => {
     const now = Date.now();
     vi.setSystemTime(now);
 
-    const { result } = renderHook(() => useTimer(makeOptions({ selectedDuration: 1, onComplete })));
+    const { result } = renderHook(() =>
+      useTimer(makeOptions({ selectedDuration: 1, onComplete })),
+    );
 
     act(() => {
       result.current.startTimer();
@@ -232,7 +251,9 @@ describe("useTimer", () => {
     const now = Date.now();
     vi.setSystemTime(now);
 
-    const { result } = renderHook(() => useTimer(makeOptions({ selectedDuration: 600, onFlush })));
+    const { result } = renderHook(() =>
+      useTimer(makeOptions({ selectedDuration: 600, onFlush })),
+    );
 
     act(() => {
       result.current.startTimer();
@@ -256,7 +277,9 @@ describe("useTimer", () => {
   it("flushTimer shows message when no time elapsed", async () => {
     const now = Date.now();
     vi.setSystemTime(now);
-    const { result } = renderHook(() => useTimer(makeOptions({ selectedDuration: 600 })));
+    const { result } = renderHook(() =>
+      useTimer(makeOptions({ selectedDuration: 600 })),
+    );
 
     act(() => {
       result.current.startTimer();
@@ -274,7 +297,9 @@ describe("useTimer", () => {
     const now = Date.now();
     vi.setSystemTime(now);
 
-    const { result } = renderHook(() => useTimer(makeOptions({ selectedDuration: 90 })));
+    const { result } = renderHook(() =>
+      useTimer(makeOptions({ selectedDuration: 90 })),
+    );
 
     act(() => {
       result.current.startTimer();

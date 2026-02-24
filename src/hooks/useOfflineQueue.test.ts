@@ -61,7 +61,11 @@ describe("useOfflineQueue", () => {
   it("enqueue appends to existing queue", () => {
     const { result } = renderHook(() => useOfflineQueue("user", "token"));
 
-    const item2: QueuedDatapoint = { ...item, goalSlug: "reading", queuedAt: item.queuedAt + 1 };
+    const item2: QueuedDatapoint = {
+      ...item,
+      goalSlug: "reading",
+      queuedAt: item.queuedAt + 1,
+    };
 
     act(() => {
       result.current.enqueue(item);
@@ -88,12 +92,21 @@ describe("useOfflineQueue", () => {
     expect(result.current.queue).toEqual([]);
     expect(localStorage.getItem(OFFLINE_QUEUE_KEY)).toBeNull();
     expect(mockPost).toHaveBeenCalledWith(
-      "user", "token", "focus", 30, "test session", 1700000000,
+      "user",
+      "token",
+      "focus",
+      30,
+      "test session",
+      1700000000,
     );
   });
 
   it("processQueue stops on NetworkError and keeps remaining items", async () => {
-    const item2: QueuedDatapoint = { ...item, goalSlug: "reading", queuedAt: item.queuedAt + 1 };
+    const item2: QueuedDatapoint = {
+      ...item,
+      goalSlug: "reading",
+      queuedAt: item.queuedAt + 1,
+    };
     localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify([item, item2]));
     mockPost.mockRejectedValue(new NetworkError("Failed to fetch"));
 
@@ -108,7 +121,11 @@ describe("useOfflineQueue", () => {
   });
 
   it("processQueue drops items with API errors", async () => {
-    const item2: QueuedDatapoint = { ...item, goalSlug: "reading", queuedAt: item.queuedAt + 1 };
+    const item2: QueuedDatapoint = {
+      ...item,
+      goalSlug: "reading",
+      queuedAt: item.queuedAt + 1,
+    };
     localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify([item, item2]));
     // First item: API error (dropped), second item: success
     mockPost.mockRejectedValueOnce(new Error("Beeminder error 422: Invalid"));
