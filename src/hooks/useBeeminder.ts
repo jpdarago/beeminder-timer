@@ -31,11 +31,6 @@ function loadCachedGoals(): {
       if (savedGoalSlug && goals.length > 0) {
         if (goals.some((goal) => goal.slug === savedGoalSlug)) {
           goalSlug = savedGoalSlug;
-        } else {
-          console.log(
-            "Saved goal slug not found in goals list, clearing:",
-            savedGoalSlug,
-          );
         }
       }
     }
@@ -106,14 +101,8 @@ export function useBeeminder(username: string, authToken: string) {
         username,
       )}/goals.json?auth_token=${encodeURIComponent(authToken)}`;
 
-      console.log("Fetching goals from Beeminder:", { endpoint, username });
-
       const res = await fetch(endpoint);
       const text = await res.text();
-      console.log("Beeminder goals response:", {
-        status: res.status,
-        body: text,
-      });
 
       if (!res.ok) {
         throw new Error(`Beeminder goals error ${res.status}: ${text}`);
@@ -127,10 +116,6 @@ export function useBeeminder(username: string, authToken: string) {
 
       // Clear goalSlug if it no longer exists in the refreshed goals
       if (goalSlug && !filteredGoals.some((goal) => goal.slug === goalSlug)) {
-        console.log(
-          "Previously selected goal no longer exists, clearing:",
-          goalSlug,
-        );
         setGoalSlug("");
       }
 
@@ -154,7 +139,6 @@ export function useBeeminder(username: string, authToken: string) {
     value: number,
     comment: string,
   ): Promise<void> => {
-    console.log("Posting to Beeminder:", { value, comment, goalSlug });
     await postBeeminderDatapoint(
       username,
       authToken,

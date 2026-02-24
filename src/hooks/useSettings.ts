@@ -7,10 +7,6 @@ function loadStoredSettings(): StoredSettings | null {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as StoredSettings;
-      console.log("Loaded saved settings on startup:", {
-        username: parsed.username ?? "",
-        authToken: parsed.authToken ? "***" : "(none)",
-      });
       return parsed;
     }
   } catch {
