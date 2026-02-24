@@ -204,7 +204,7 @@ const App: React.FC = () => {
                 setSelectedDuration(minutes * 60);
               }}
             />
-            <span className="duration-unit">min</span>
+            <span className="duration-unit">minutes</span>
           </div>
         ) : (
           <div className="timer-display">{timer.displayTime}</div>
