@@ -151,15 +151,36 @@ select:focus {
   color: var(--bee-purple-dark);
 }
 
-.timer-display[type="text"] {
+.duration-input-wrapper {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.timer-display[type="number"] {
   border: none;
   background: transparent;
-  text-align: center;
+  text-align: right;
   font-size: 3rem;
   font-weight: 700;
   color: var(--bee-purple-dark);
-  width: 100%;
-  max-width: 200px;
+  width: 4.5ch;
+  appearance: textfield;
+  appearance: textfield;
+}
+
+.timer-display[type="number"]::-webkit-inner-spin-button,
+.timer-display[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.duration-unit {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--bee-purple-dark);
+  opacity: 0.6;
 }
 
 /* === Buttons (Styled with Beeminder Colors) === */
@@ -292,7 +313,6 @@ select:focus {
 
 input[type="range"] {
   appearance: none;
-  appearance: none;
   width: 100%;
   height: 6px;
   border-radius: 3px;
@@ -308,7 +328,6 @@ input[type="range"]:focus {
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
   appearance: none;
   width: 18px;
   height: 18px;

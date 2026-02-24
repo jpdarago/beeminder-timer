@@ -192,18 +192,19 @@ const App: React.FC = () => {
         )}
 
         {timer.status === "idle" ? (
-          <div>
+          <div className="duration-input-wrapper">
             <input
               className="timer-display"
-              type="text"
+              type="number"
               min="1"
-              value={`${selectedDuration / 60}:00`}
+              max="999"
+              value={selectedDuration / 60}
               onChange={(e) => {
-                const value = e.target.value.split(":")[0];
-                const minutes = parseInt(value) || 1;
+                const minutes = Math.max(1, parseInt(e.target.value) || 1);
                 setSelectedDuration(minutes * 60);
               }}
             />
+            <span className="duration-unit">min</span>
           </div>
         ) : (
           <div className="timer-display">{timer.displayTime}</div>
