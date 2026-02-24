@@ -7,6 +7,7 @@ import { useBeeminder } from "./hooks/useBeeminder.ts";
 import { useTimer, loadPersistedTimerState } from "./hooks/useTimer.ts";
 import { useOfflineQueue } from "./hooks/useOfflineQueue.ts";
 import { useTheme } from "./hooks/useTheme.ts";
+import { useVolume } from "./hooks/useVolume.ts";
 
 const App: React.FC = () => {
   const [persistedTimer] = useState(loadPersistedTimerState);
@@ -17,6 +18,7 @@ const App: React.FC = () => {
   const [youtubeTitle, setYoutubeTitle] = useState<string | null>(null);
 
   const { themePreference, setThemePreference } = useTheme();
+  const { volume, setVolume } = useVolume();
 
   const settings = useSettings();
   const { username, authToken } = settings;
@@ -81,6 +83,7 @@ const App: React.FC = () => {
     username,
     authToken,
     comment,
+    volume,
     onComplete,
     onFlush,
   });
@@ -320,6 +323,23 @@ const App: React.FC = () => {
             <option value="light">Light</option>
             <option value="dark">Dark</option>
           </select>
+        </label>
+
+        <label>
+          <b>Volume</b>
+          <div className="volume-control">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+            />
+            <span className="volume-label">
+              {volume === 0 ? "Muted" : `${Math.round(volume * 100)}%`}
+            </span>
+          </div>
         </label>
       </section>
     </div>

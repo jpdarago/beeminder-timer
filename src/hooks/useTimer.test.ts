@@ -25,6 +25,7 @@ function makeOptions(overrides: Partial<Parameters<typeof useTimer>[0]> = {}) {
     username: "testuser",
     authToken: "testtoken",
     comment: "",
+    volume: 0.7,
     onComplete: vi.fn().mockResolvedValue(undefined),
     onFlush: vi.fn().mockResolvedValue(undefined),
     ...overrides,

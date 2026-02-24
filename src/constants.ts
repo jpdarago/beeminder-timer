@@ -10,4 +10,6 @@ export const OFFLINE_QUEUE_KEY = "beeminderTimerOfflineQueue";
 
 export const THEME_KEY = "beeminderTimerTheme";
 
+export const VOLUME_KEY = "beeminderTimerVolume";
+
 export const durations = [5, 10, 15, 20, 30, 45, 60]; // minutes
