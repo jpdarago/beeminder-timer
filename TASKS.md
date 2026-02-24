@@ -13,7 +13,7 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 ## UX improvements
 
 - [x] 1\. Dark mode — add a toggle that switches CSS custom properties and persists the preference to localStorage
-- [ ] 2\. Debounce YouTube title fetch — currently fires on every keystroke in the comment field; debounce by ~500ms
+- [x] 2\. Debounce YouTube title fetch — currently fires on every keystroke in the comment field; debounce by ~500ms
 - [ ] 3\. Confirm before flush — flush immediately posts partial time with no confirmation, unlike cancel which prompts
 - [ ] 4\. Progress bar or ring — visual indicator of elapsed/remaining time alongside the numeric display
 - [ ] 5\. Notification sound volume control — currently hardcoded to 0.7; add a slider or at least a mute toggle
