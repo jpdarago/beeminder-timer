@@ -27,7 +27,7 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 - [ ] 10\. Retry on Beeminder post failure — currently goes straight to error state; offer a retry button or auto-retry once
 - [ ] 11\. Validate auth token on save — ping the Beeminder API when saving settings so the user gets immediate feedback if credentials are wrong
 - [ ] 12\. Handle stale deadline on page reload — if the browser was closed during a running timer, the persisted deadline is in the past; detect this and either auto-flush the elapsed time or prompt the user
-- [ ] 13\. Optimistic goalSlug persistence — the selected goal is only saved to localStorage when the user clicks the settings save button; save it on change so it survives reloads without explicit save
+- [x] 13\. Optimistic goalSlug persistence — the selected goal is only saved to localStorage when the user clicks the settings save button; save it on change so it survives reloads without explicit save
 
 ## Code quality
 
