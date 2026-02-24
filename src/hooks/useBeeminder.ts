@@ -3,7 +3,11 @@ import type { BeeminderGoal, StoredGoals, StoredSettings } from "../types.ts";
 import { GOALS_KEY, GOAL_STALENESS_TIME, SETTINGS_KEY } from "../constants.ts";
 import { postBeeminderDatapoint } from "../utils.ts";
 
-function loadCachedGoals(): { goals: BeeminderGoal[]; updatedAt: number | null; goalSlug: string } {
+function loadCachedGoals(): {
+  goals: BeeminderGoal[];
+  updatedAt: number | null;
+  goalSlug: string;
+} {
   let goals: BeeminderGoal[] = [];
   let updatedAt: number | null = null;
   let goalSlug = "";
@@ -25,10 +29,13 @@ function loadCachedGoals(): { goals: BeeminderGoal[]; updatedAt: number | null; 
       const settings = JSON.parse(rawSettings) as StoredSettings;
       const savedGoalSlug = settings.goalSlug ?? "";
       if (savedGoalSlug && goals.length > 0) {
-        if (goals.some(goal => goal.slug === savedGoalSlug)) {
+        if (goals.some((goal) => goal.slug === savedGoalSlug)) {
           goalSlug = savedGoalSlug;
         } else {
-          console.log("Saved goal slug not found in goals list, clearing:", savedGoalSlug);
+          console.log(
+            "Saved goal slug not found in goals list, clearing:",
+            savedGoalSlug,
+          );
         }
       }
     }
@@ -44,14 +51,18 @@ export function useBeeminder(username: string, authToken: string) {
   const [goals, setGoals] = useState<BeeminderGoal[]>(cached.goals);
   const [loadingGoals, setLoadingGoals] = useState(false);
   const [goalsError, setGoalsError] = useState<string | null>(null);
-  const [lastGoalsUpdate, setLastGoalsUpdate] = useState<number | null>(cached.updatedAt);
+  const [lastGoalsUpdate, setLastGoalsUpdate] = useState<number | null>(
+    cached.updatedAt,
+  );
   const [goalSlug, setGoalSlug] = useState(cached.goalSlug);
 
   // Auto-refresh goals if stale or never fetched
   useEffect(() => {
     if (!username || !authToken) return;
 
-    const shouldRefresh = lastGoalsUpdate === null || (Date.now() - lastGoalsUpdate > GOAL_STALENESS_TIME);
+    const shouldRefresh =
+      lastGoalsUpdate === null ||
+      Date.now() - lastGoalsUpdate > GOAL_STALENESS_TIME;
     if (shouldRefresh) {
       refreshGoals();
     }
@@ -92,28 +103,34 @@ export function useBeeminder(username: string, authToken: string) {
       setGoalsError(null);
 
       const endpoint = `https://www.beeminder.com/api/v1/users/${encodeURIComponent(
-        username
+        username,
       )}/goals.json?auth_token=${encodeURIComponent(authToken)}`;
 
       console.log("Fetching goals from Beeminder:", { endpoint, username });
 
       const res = await fetch(endpoint);
       const text = await res.text();
-      console.log("Beeminder goals response:", { status: res.status, body: text });
+      console.log("Beeminder goals response:", {
+        status: res.status,
+        body: text,
+      });
 
       if (!res.ok) {
         throw new Error(`Beeminder goals error ${res.status}: ${text}`);
       }
 
       const parsed = JSON.parse(text) as BeeminderGoal[];
-      const filteredGoals = parsed.filter(goal => goal.gunits === 'minutes');
+      const filteredGoals = parsed.filter((goal) => goal.gunits === "minutes");
       setGoals(filteredGoals);
       const now = Date.now();
       setLastGoalsUpdate(now);
 
       // Clear goalSlug if it no longer exists in the refreshed goals
-      if (goalSlug && !filteredGoals.some(goal => goal.slug === goalSlug)) {
-        console.log("Previously selected goal no longer exists, clearing:", goalSlug);
+      if (goalSlug && !filteredGoals.some((goal) => goal.slug === goalSlug)) {
+        console.log(
+          "Previously selected goal no longer exists, clearing:",
+          goalSlug,
+        );
         setGoalSlug("");
       }
 
@@ -133,7 +150,10 @@ export function useBeeminder(username: string, authToken: string) {
     }
   };
 
-  const postDatapoint = async (value: number, comment: string): Promise<void> => {
+  const postDatapoint = async (
+    value: number,
+    comment: string,
+  ): Promise<void> => {
     console.log("Posting to Beeminder:", { value, comment, goalSlug });
     await postBeeminderDatapoint(
       username,

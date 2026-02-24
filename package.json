@@ -7,9 +7,13 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare": "husky"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -25,14 +29,25 @@
     "@vite-pwa/assets-generator": "^1.0.2",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "stylelint": "^17.3.0",
+    "stylelint-config-standard": "^40.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.18"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,css,json,md}": "prettier --write",
+    "*.css": "stylelint --fix",
+    "*.{ts,tsx}": "eslint --fix"
   }
 }

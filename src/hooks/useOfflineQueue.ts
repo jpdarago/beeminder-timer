@@ -25,7 +25,7 @@ export function useOfflineQueue(username: string, authToken: string) {
   const [queue, setQueue] = useState<QueuedDatapoint[]>(loadQueue);
 
   const enqueue = useCallback((item: QueuedDatapoint) => {
-    setQueue(prev => {
+    setQueue((prev) => {
       const next = [...prev, item];
       saveQueue(next);
       return next;
@@ -66,7 +66,9 @@ export function useOfflineQueue(username: string, authToken: string) {
 
   // Process queue when coming online (and on mount if already online)
   useEffect(() => {
-    const handler = () => { processQueue(); };
+    const handler = () => {
+      processQueue();
+    };
     window.addEventListener("online", handler);
     // Process on mount if currently online — scheduled to avoid synchronous setState in effect
     if (navigator.onLine) {

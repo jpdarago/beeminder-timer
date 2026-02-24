@@ -56,17 +56,21 @@ describe("getYouTubeTitle", () => {
       json: async () => ({ title: "Test Video Title" }),
     } as Response);
 
-    const title = await getYouTubeTitle("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+    const title = await getYouTubeTitle(
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    );
     expect(title).toBe("Test Video Title");
     expect(fetch).toHaveBeenCalledWith(
-      "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ&format=json"
+      "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ&format=json",
     );
   });
 
   it("returns null when fetch fails", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Network error"));
 
-    const title = await getYouTubeTitle("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+    const title = await getYouTubeTitle(
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    );
     expect(title).toBeNull();
   });
 
@@ -75,7 +79,9 @@ describe("getYouTubeTitle", () => {
       ok: false,
     } as Response);
 
-    const title = await getYouTubeTitle("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+    const title = await getYouTubeTitle(
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    );
     expect(title).toBeNull();
   });
 
@@ -95,7 +101,9 @@ describe("getYouTubeTitle", () => {
       json: async () => ({ title: "Param Title" }),
     } as Response);
 
-    const title = await getYouTubeTitle("https://www.youtube.com/watch?v=abc123&t=30");
+    const title = await getYouTubeTitle(
+      "https://www.youtube.com/watch?v=abc123&t=30",
+    );
     expect(title).toBe("Param Title");
   });
 });

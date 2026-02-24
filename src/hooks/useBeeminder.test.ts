@@ -42,9 +42,14 @@ describe("useBeeminder", () => {
       updatedAt: Date.now(),
     };
     localStorage.setItem(GOALS_KEY, JSON.stringify(cached));
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-      username: "u", authToken: "t", goalSlug: "focus"
-    }));
+    localStorage.setItem(
+      SETTINGS_KEY,
+      JSON.stringify({
+        username: "u",
+        authToken: "t",
+        goalSlug: "focus",
+      }),
+    );
 
     // Don't pass credentials to avoid auto-refresh
     const { result } = renderHook(() => useBeeminder("", ""));
@@ -59,9 +64,14 @@ describe("useBeeminder", () => {
       updatedAt: Date.now(),
     };
     localStorage.setItem(GOALS_KEY, JSON.stringify(cached));
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-      username: "u", authToken: "t", goalSlug: "nonexistent"
-    }));
+    localStorage.setItem(
+      SETTINGS_KEY,
+      JSON.stringify({
+        username: "u",
+        authToken: "t",
+        goalSlug: "nonexistent",
+      }),
+    );
 
     const { result } = renderHook(() => useBeeminder("", ""));
 
@@ -133,9 +143,14 @@ describe("useBeeminder", () => {
 
   it("refreshGoals clears goalSlug if selected goal no longer exists", async () => {
     // Start with a goal that won't be in the refresh response
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-      username: "user", authToken: "token", goalSlug: "deleted-goal"
-    }));
+    localStorage.setItem(
+      SETTINGS_KEY,
+      JSON.stringify({
+        username: "user",
+        authToken: "token",
+        goalSlug: "deleted-goal",
+      }),
+    );
 
     mockGoalsResponse();
 
@@ -166,8 +181,8 @@ describe("useBeeminder", () => {
     });
 
     // Find the POST call (skip the GET for goals)
-    const postCall = mockFetch.mock.calls.find(call =>
-      call[1]?.method === "POST"
+    const postCall = mockFetch.mock.calls.find(
+      (call) => call[1]?.method === "POST",
     );
     expect(postCall).toBeDefined();
     expect(postCall![0]).toContain("/users/user/goals/focus/datapoints.json");
@@ -192,7 +207,7 @@ describe("useBeeminder", () => {
     });
 
     await expect(
-      act(() => result.current.postDatapoint(30, "test"))
+      act(() => result.current.postDatapoint(30, "test")),
     ).rejects.toThrow("Beeminder error 422");
   });
 

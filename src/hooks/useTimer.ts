@@ -36,15 +36,18 @@ export function useTimer({
   onFlush,
 }: UseTimerOptions) {
   const [persisted] = useState(loadPersistedTimerState);
-  const [remaining, setRemaining] = useState<number | null>(persisted?.remaining ?? null);
-  const [deadline, setDeadline] = useState<number | null>(persisted?.deadline ?? null);
+  const [remaining, setRemaining] = useState<number | null>(
+    persisted?.remaining ?? null,
+  );
+  const [deadline, setDeadline] = useState<number | null>(
+    persisted?.deadline ?? null,
+  );
   const [status, setStatus] = useState<Status>(persisted?.status ?? "idle");
   const [error, setError] = useState<string | null>(null);
   const [paused, setPaused] = useState(persisted?.paused ?? false);
   const [flushMessage, setFlushMessage] = useState<string | null>(null);
 
   const running = status === "running";
-
 
   // Change the tab title to show the timer
   useEffect(() => {
@@ -53,7 +56,9 @@ export function useTimer({
       return;
     }
 
-    const m = Math.floor(remaining / 60).toString().padStart(2, "0");
+    const m = Math.floor(remaining / 60)
+      .toString()
+      .padStart(2, "0");
     const s = (remaining % 60).toString().padStart(2, "0");
     document.title = `${m}:${s} · Beeminder Timer`;
   }, [remaining]);
@@ -83,7 +88,8 @@ export function useTimer({
 
   // When timer reaches 0, post to Beeminder
   useEffect(() => {
-    if (remaining !== 0 || status === "posting" || status === "finished") return;
+    if (remaining !== 0 || status === "posting" || status === "finished")
+      return;
 
     const doComplete = async () => {
       if (!username || !authToken || !goalSlug) {
@@ -113,7 +119,7 @@ export function useTimer({
             body: `Logged session for ${goalSlug} to Beeminder.`,
             icon: "bee.svg",
             silent: false,
-            requireInteraction: false
+            requireInteraction: false,
           });
         }
       } catch (e) {
@@ -157,7 +163,12 @@ export function useTimer({
   }, [goalSlug, username, authToken, selectedDuration, comment]);
 
   const cancelTimer = useCallback(() => {
-    if (!window.confirm("Cancel the current session? Elapsed time will not be logged.")) return;
+    if (
+      !window.confirm(
+        "Cancel the current session? Elapsed time will not be logged.",
+      )
+    )
+      return;
     setDeadline(null);
     setRemaining(null);
     setStatus("idle");
@@ -198,10 +209,25 @@ export function useTimer({
       comment,
     };
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
-  }, [remaining, paused, status, deadline, goalSlug, selectedDuration, comment]);
+  }, [
+    remaining,
+    paused,
+    status,
+    deadline,
+    goalSlug,
+    selectedDuration,
+    comment,
+  ]);
 
   const flushTimer = useCallback(async () => {
-    if (remaining === null || selectedDuration <= 0 || !username || !authToken || !goalSlug) return;
+    if (
+      remaining === null ||
+      selectedDuration <= 0 ||
+      !username ||
+      !authToken ||
+      !goalSlug
+    )
+      return;
 
     const elapsed = selectedDuration - remaining;
     if (elapsed <= 0) {
@@ -236,7 +262,7 @@ export function useTimer({
           body: `Logged ${value.toFixed(2)} minutes for ${goalSlug} to Beeminder.`,
           icon: "bee.svg",
           silent: false,
-          requireInteraction: false
+          requireInteraction: false,
         });
       }
     } catch (e) {
@@ -248,25 +274,38 @@ export function useTimer({
   // Keyboard shortcut for space bar
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === ' ') {
+      if (event.key === " ") {
         const activeElement = document.activeElement;
-        if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
+        if (
+          activeElement instanceof HTMLInputElement ||
+          activeElement instanceof HTMLTextAreaElement
+        ) {
           return;
         }
 
         event.preventDefault();
-        if (!goalSlug || !username || !authToken || selectedDuration <= 0) return;
-        if (status === 'idle') {
+        if (!goalSlug || !username || !authToken || selectedDuration <= 0)
+          return;
+        if (status === "idle") {
           startTimer();
-        } else if (status === 'running' || paused) {
+        } else if (status === "running" || paused) {
           togglePause();
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goalSlug, username, authToken, selectedDuration, status, paused, startTimer, togglePause]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    goalSlug,
+    username,
+    authToken,
+    selectedDuration,
+    status,
+    paused,
+    startTimer,
+    togglePause,
+  ]);
 
   const displayTime =
     remaining === null ? formatTime(selectedDuration) : formatTime(remaining);
