@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "./App.css";
 import { THIRTY_MINUTES, durations } from "./constants.ts";
-import { getYouTubeTitle } from "./utils.ts";
+import { getYouTubeTitle, NetworkError } from "./utils.ts";
 import { useSettings } from "./hooks/useSettings.ts";
 import { useBeeminder } from "./hooks/useBeeminder.ts";
 import { useTimer, loadPersistedTimerState } from "./hooks/useTimer.ts";
+import { useOfflineQueue } from "./hooks/useOfflineQueue.ts";
 
 const App: React.FC = () => {
   const [persistedTimer] = useState(loadPersistedTimerState);
@@ -19,6 +20,7 @@ const App: React.FC = () => {
 
   const beeminder = useBeeminder(username, authToken);
   const { goalSlug, goals } = beeminder;
+  const offlineQueue = useOfflineQueue(username, authToken);
 
   // Apply persisted goalSlug from timer state (overrides beeminder's default)
   useEffect(() => {
@@ -29,14 +31,42 @@ const App: React.FC = () => {
 
   const onComplete = useCallback(async () => {
     const actualComment = comment.trim() || `${selectedDuration / 60}-minutes focus session`;
-    await beeminder.postDatapoint(selectedDuration / 60, actualComment);
-  }, [comment, selectedDuration, beeminder]);
+    try {
+      await beeminder.postDatapoint(selectedDuration / 60, actualComment);
+    } catch (e) {
+      if (e instanceof NetworkError) {
+        offlineQueue.enqueue({
+          goalSlug,
+          value: selectedDuration / 60,
+          comment: actualComment,
+          timestamp: Math.floor(Date.now() / 1000),
+          queuedAt: Date.now(),
+        });
+        return; // Don't rethrow — timer transitions to "finished"
+      }
+      throw e;
+    }
+  }, [comment, selectedDuration, beeminder, goalSlug, offlineQueue]);
 
   const onFlush = useCallback(async (elapsed: number) => {
     const value = elapsed / 60;
     const actualComment = `Flushed timer: ${value.toFixed(2)} minutes`;
-    await beeminder.postDatapoint(value, actualComment);
-  }, [beeminder]);
+    try {
+      await beeminder.postDatapoint(value, actualComment);
+    } catch (e) {
+      if (e instanceof NetworkError) {
+        offlineQueue.enqueue({
+          goalSlug,
+          value,
+          comment: actualComment,
+          timestamp: Math.floor(Date.now() / 1000),
+          queuedAt: Date.now(),
+        });
+        return;
+      }
+      throw e;
+    }
+  }, [beeminder, goalSlug, offlineQueue]);
 
   const timer = useTimer({
     selectedDuration,
@@ -186,6 +216,21 @@ const App: React.FC = () => {
           )}
 
       </section>
+
+      {offlineQueue.queue.length > 0 && (
+        <section>
+          <div className="status-text">
+            {offlineQueue.queue.length} datapoint{offlineQueue.queue.length !== 1 ? "s" : ""} pending
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={offlineQueue.processQueue}
+          >
+            Retry now
+          </button>
+        </section>
+      )}
 
       <section>
         <h2>Beeminder settings</h2>

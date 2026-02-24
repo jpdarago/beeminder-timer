@@ -6,4 +6,6 @@ export const SETTINGS_KEY = "beeminderTimerSettings";
 export const GOALS_KEY = "beeminderTimerGoals";
 export const TIMER_STATE_KEY = "beeminderTimerState";
 
+export const OFFLINE_QUEUE_KEY = "beeminderTimerOfflineQueue";
+
 export const durations = [5, 10, 15, 20, 30, 45, 60]; // minutes

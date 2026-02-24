@@ -1,3 +1,51 @@
+export class NetworkError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NetworkError";
+  }
+}
+
+export async function postBeeminderDatapoint(
+  username: string,
+  authToken: string,
+  goalSlug: string,
+  value: number,
+  comment: string,
+  timestamp: number,
+): Promise<void> {
+  const endpoint = `https://www.beeminder.com/api/v1/users/${encodeURIComponent(
+    username
+  )}/goals/${encodeURIComponent(goalSlug)}/datapoints.json`;
+
+  const params = new URLSearchParams({
+    auth_token: authToken,
+    value: value.toString(),
+    comment,
+    timestamp: timestamp.toString(),
+  });
+
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    });
+  } catch (e) {
+    if (e instanceof TypeError) {
+      throw new NetworkError(e.message);
+    }
+    throw e;
+  }
+
+  const text = await res.text();
+  console.log("Beeminder response:", { status: res.status, body: text });
+
+  if (!res.ok) {
+    throw new Error(`Beeminder error ${res.status}: ${text}`);
+  }
+}
+
 export function formatTime(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60)
     .toString()

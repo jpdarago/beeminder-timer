@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { BeeminderGoal, StoredGoals, StoredSettings } from "../types.ts";
 import { GOALS_KEY, GOAL_STALENESS_TIME, SETTINGS_KEY } from "../constants.ts";
+import { postBeeminderDatapoint } from "../utils.ts";
 
 function loadCachedGoals(): { goals: BeeminderGoal[]; updatedAt: number | null; goalSlug: string } {
   let goals: BeeminderGoal[] = [];
@@ -133,38 +134,15 @@ export function useBeeminder(username: string, authToken: string) {
   };
 
   const postDatapoint = async (value: number, comment: string): Promise<void> => {
-    const endpoint = `https://www.beeminder.com/api/v1/users/${encodeURIComponent(
-      username
-    )}/goals/${encodeURIComponent(goalSlug)}/datapoints.json`;
-
-    const params = new URLSearchParams({
-      auth_token: authToken,
-      value: value.toString(),
-      comment,
-      timestamp: Math.floor(Date.now() / 1000).toString(),
-    });
-
-    console.log("Posting to Beeminder:", {
-      endpoint,
+    console.log("Posting to Beeminder:", { value, comment, goalSlug });
+    await postBeeminderDatapoint(
+      username,
+      authToken,
+      goalSlug,
       value,
       comment,
-      goalSlug,
-    });
-
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params.toString(),
-    });
-
-    const text = await res.text();
-    console.log("Beeminder response:", { status: res.status, body: text });
-
-    if (!res.ok) {
-      throw new Error(`Beeminder error ${res.status}: ${text}`);
-    }
+      Math.floor(Date.now() / 1000),
+    );
   };
 
   return {

@@ -26,3 +26,11 @@ export type StoredTimerState = {
   selectedDuration: number;
   comment: string;
 };
+
+export type QueuedDatapoint = {
+  goalSlug: string;
+  value: number;
+  comment: string;
+  timestamp: number;
+  queuedAt: number;
+};
