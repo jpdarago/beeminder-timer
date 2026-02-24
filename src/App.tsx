@@ -207,7 +207,27 @@ const App: React.FC = () => {
             <span className="duration-unit">minutes</span>
           </div>
         ) : (
-          <div className="timer-display">{timer.displayTime}</div>
+          <div className="progress-ring-wrapper">
+            <svg className="progress-ring" viewBox="0 0 120 120">
+              <circle className="progress-ring-bg" cx="60" cy="60" r="54" />
+              <circle
+                className="progress-ring-fill"
+                cx="60"
+                cy="60"
+                r="54"
+                strokeDasharray={2 * Math.PI * 54}
+                strokeDashoffset={
+                  2 *
+                  Math.PI *
+                  54 *
+                  (timer.remaining !== null
+                    ? timer.remaining / selectedDuration
+                    : 1)
+                }
+              />
+            </svg>
+            <div className="timer-display">{timer.displayTime}</div>
+          </div>
         )}
 
         {timer.flushMessage && (
