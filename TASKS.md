@@ -12,7 +12,7 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 
 ## UX improvements
 
-1. [ ] Dark mode — add a toggle that switches CSS custom properties and persists the preference to localStorage
+1. [x] Dark mode — add a toggle that switches CSS custom properties and persists the preference to localStorage
 2. [ ] Debounce YouTube title fetch — currently fires on every keystroke in the comment field; debounce by ~500ms
 3. [ ] Confirm before flush — flush immediately posts partial time with no confirmation, unlike cancel which prompts
 4. [ ] Progress bar or ring — visual indicator of elapsed/remaining time alongside the numeric display
@@ -42,5 +42,5 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 19. [ ] Session history — show a log of recently posted datapoints (stored locally or fetched from Beeminder)
 20. [ ] Multiple timer presets per goal — let users save named presets (e.g. "deep work 45m", "quick check 10m")
 21. [ ] Pomodoro mode — alternating focus/break intervals with configurable lengths
-22. [ ] Offline queue — if the Beeminder post fails due to network, queue it and retry when connectivity returns (https://github.com/jpdarago/beeminder-timer/issues/1)
+22. [x] Offline queue — if the Beeminder post fails due to network, queue it and retry when connectivity returns (https://github.com/jpdarago/beeminder-timer/issues/1)
 23. [x] PWA / installable — add a service worker and manifest so the app can be installed and work offline
