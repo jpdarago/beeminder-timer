@@ -42,5 +42,5 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 19. [ ] Session history — show a log of recently posted datapoints (stored locally or fetched from Beeminder)
 20. [ ] Multiple timer presets per goal — let users save named presets (e.g. "deep work 45m", "quick check 10m")
 21. [ ] Pomodoro mode — alternating focus/break intervals with configurable lengths
-22. [ ] Offline queue — if the Beeminder post fails due to network, queue it and retry when connectivity returns
+22. [ ] Offline queue — if the Beeminder post fails due to network, queue it and retry when connectivity returns (https://github.com/jpdarago/beeminder-timer/issues/1)
 23. [x] PWA / installable — add a service worker and manifest so the app can be installed and work offline
