@@ -1,5 +1,7 @@
 export type Status = "idle" | "running" | "posting" | "finished" | "error";
 
+export type ThemePreference = "system" | "light" | "dark";
+
 export type BeeminderGoal = {
   slug: string;
   title?: string;

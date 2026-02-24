@@ -6,6 +6,7 @@ import { useSettings } from "./hooks/useSettings.ts";
 import { useBeeminder } from "./hooks/useBeeminder.ts";
 import { useTimer, loadPersistedTimerState } from "./hooks/useTimer.ts";
 import { useOfflineQueue } from "./hooks/useOfflineQueue.ts";
+import { useTheme } from "./hooks/useTheme.ts";
 
 const App: React.FC = () => {
   const [persistedTimer] = useState(loadPersistedTimerState);
@@ -14,6 +15,8 @@ const App: React.FC = () => {
   );
   const [comment, setComment] = useState(persistedTimer?.comment ?? "");
   const [youtubeTitle, setYoutubeTitle] = useState<string | null>(null);
+
+  const { themePreference, setThemePreference } = useTheme();
 
   const settings = useSettings();
   const { username, authToken } = settings;
@@ -278,6 +281,20 @@ const App: React.FC = () => {
             </button>
           </>
         )}
+      </section>
+
+      <section>
+        <label>
+          <b>Theme</b>
+          <select
+            value={themePreference}
+            onChange={e => setThemePreference(e.target.value as "system" | "light" | "dark")}
+          >
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
       </section>
     </div>
   );
