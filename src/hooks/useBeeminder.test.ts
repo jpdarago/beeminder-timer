@@ -208,7 +208,7 @@ describe("useBeeminder", () => {
 
     await expect(
       act(() => result.current.postDatapoint(30, "test")),
-    ).rejects.toThrow("Beeminder error 422");
+    ).rejects.toThrow("Beeminder API error (HTTP 422)");
   });
 
   it("refreshGoals shows error without credentials", async () => {

@@ -1,3 +1,18 @@
+export function extractBeeminderError(
+  status: number,
+  responseText: string,
+): string {
+  try {
+    const json = JSON.parse(responseText);
+    const message =
+      json?.errors?.message ?? json?.error ?? json?.message ?? null;
+    if (typeof message === "string") return message;
+  } catch {
+    // not JSON
+  }
+  return `Beeminder API error (HTTP ${status}).`;
+}
+
 export class NetworkError extends Error {
   constructor(message: string) {
     super(message);
@@ -41,7 +56,7 @@ export async function postBeeminderDatapoint(
   const text = await res.text();
 
   if (!res.ok) {
-    throw new Error(`Beeminder error ${res.status}: ${text}`);
+    throw new Error(extractBeeminderError(res.status, text));
   }
 }
 

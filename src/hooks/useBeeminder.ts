@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { BeeminderGoal, StoredGoals, StoredSettings } from "../types.ts";
 import { GOALS_KEY, GOAL_STALENESS_TIME, SETTINGS_KEY } from "../constants.ts";
-import { postBeeminderDatapoint } from "../utils.ts";
+import { extractBeeminderError, postBeeminderDatapoint } from "../utils.ts";
 
 function loadCachedGoals(): {
   goals: BeeminderGoal[];
@@ -105,7 +105,7 @@ export function useBeeminder(username: string, authToken: string) {
       const text = await res.text();
 
       if (!res.ok) {
-        throw new Error(`Beeminder goals error ${res.status}: ${text}`);
+        throw new Error(extractBeeminderError(res.status, text));
       }
 
       const parsed = JSON.parse(text) as BeeminderGoal[];
