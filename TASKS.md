@@ -15,7 +15,7 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 - [x] 1\. Dark mode — add a toggle that switches CSS custom properties and persists the preference to localStorage
 - [x] 2\. Debounce YouTube title fetch — currently fires on every keystroke in the comment field; debounce by ~500ms
 - [ ] 3\. Confirm before flush — flush immediately posts partial time with no confirmation, unlike cancel which prompts
-- [ ] 4\. Progress bar or ring — visual indicator of elapsed/remaining time alongside the numeric display
+- [x] 4\. Progress bar or ring — visual indicator of elapsed/remaining time alongside the numeric display
 - [ ] 5\. Notification sound volume control — currently hardcoded to 0.7; add a slider or at least a mute toggle
 - [x] 6\. Custom duration input — the editable timer display parses awkwardly (splits on `:`, ignores seconds); replace with a proper minutes input or a cleaner mm:ss parser
 - [ ] 7\. Toast/flash messages instead of inline status — flushMessage and error disappear only on next action; auto-dismiss after a few seconds
