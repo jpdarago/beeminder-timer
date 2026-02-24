@@ -88,13 +88,13 @@ const App: React.FC = () => {
     onFlush,
   });
 
-  // Fetch YouTube title if comment is a YouTube URL (debounced 500ms)
+  // Fetch YouTube title if comment is a YouTube URL (debounced 200ms)
   useEffect(() => {
     const trimmed = comment.trim();
     if (!trimmed) return;
     const id = setTimeout(() => {
       getYouTubeTitle(trimmed).then(setYoutubeTitle);
-    }, 500);
+    }, 200);
     return () => clearTimeout(id);
   }, [comment]);
 
