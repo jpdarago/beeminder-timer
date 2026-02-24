@@ -3,19 +3,20 @@ name: task
 description: Work on a task from TASKS.md by number
 disable-model-invocation: true
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash, Edit, Write
+allowed-tools: Read, Grep, Glob, Bash, Edit, Write, AskUserQuestion
 argument-hint: [task-number]
 ---
 
 # Work on a task from TASKS.md
 
-You are working on task **#$ARGUMENTS** from `TASKS.md`.
-
 ## Setup
 
-1. Read `TASKS.md` and find the task matching **#$ARGUMENTS**.
-2. Verify the task is not already checked off (`[x]`). If it is, tell the user and stop.
-3. Read the current git branch. If you are not on `main`, ask the user before proceeding.
+1. If `$ARGUMENTS` is empty or blank, read `TASKS.md` and list all unchecked (`[ ]`) tasks with their numbers, then use `AskUserQuestion` to ask the user which task number to work on. Use that answer as the task number going forward.
+2. Read `TASKS.md` and find the task matching the chosen task number.
+3. Verify the task is not already checked off (`[x]`). If it is, tell the user and stop.
+4. Read the current git branch. If you are not on `main`, ask the user before proceeding.
+
+In the steps below, **TASK_NUMBER** refers to `$ARGUMENTS` if provided, or the number chosen by the user in step 1.
 
 ## Workflow
 
@@ -29,7 +30,7 @@ Follow the instructions at the top of `TASKS.md`. Specifically:
 ### 2. Create a feature branch and initial commit
 
 - Branch from `main` with a descriptive name (e.g., `debounce-youtube-fetch` for task 2).
-- Make an initial empty commit or a small scaffolding commit that references the issue: `Link task $ARGUMENTS to GitHub issue #<issue-number>`.
+- Make an initial empty commit or a small scaffolding commit that references the issue: `Link task TASK_NUMBER to GitHub issue #<issue-number>`.
 
 ### 3. Implement the task
 
@@ -38,8 +39,8 @@ Follow the instructions at the top of `TASKS.md`. Specifically:
 
 ### 4. Mark the task as done
 
-- Edit `TASKS.md`: change `[ ]` to `[x]` for task **#$ARGUMENTS**.
-- Commit this change to the branch with the message: `Mark task $ARGUMENTS as completed in TASKS.md`.
+- Edit `TASKS.md`: change `[ ]` to `[x]` for task **#TASK_NUMBER**.
+- Commit this change to the branch with the message: `Mark task TASK_NUMBER as completed in TASKS.md`.
 
 ### 5. Create a pull request
 
