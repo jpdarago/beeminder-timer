@@ -264,3 +264,32 @@ select {
   padding: 0.5rem;
   border-radius: 4px;
 }
+
+/* === Mobile === */
+@media (max-width: 640px) {
+  body {
+    background: var(--panel-bg);
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .app-wrapper {
+    margin-top: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  section {
+    padding: 0.2rem 1.5rem;
+  }
+  section:last-of-type {
+    padding-bottom: 1.5rem;
+  }
+
+  .duration-buttons {
+    flex-wrap: wrap;
+  }
+}
