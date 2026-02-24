@@ -1,5 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { formatTime, getYouTubeTitle } from "./utils.ts";
+import { extractBeeminderError, formatTime, getYouTubeTitle } from "./utils.ts";
+
+describe("extractBeeminderError", () => {
+  it("extracts message from errors.message field", () => {
+    const body = JSON.stringify({
+      errors: {
+        auth_token: "bad_token",
+        message: "No such auth_token found.",
+      },
+    });
+    expect(extractBeeminderError(401, body)).toBe("No such auth_token found.");
+  });
+
+  it("extracts from error field", () => {
+    const body = JSON.stringify({ error: "Invalid goal slug" });
+    expect(extractBeeminderError(422, body)).toBe("Invalid goal slug");
+  });
+
+  it("extracts from message field", () => {
+    const body = JSON.stringify({ message: "Rate limited" });
+    expect(extractBeeminderError(429, body)).toBe("Rate limited");
+  });
+
+  it("falls back to generic message for non-JSON response", () => {
+    expect(extractBeeminderError(500, "Internal Server Error")).toBe(
+      "Beeminder API error (HTTP 500).",
+    );
+  });
+
+  it("falls back to generic message when no known fields", () => {
+    const body = JSON.stringify({ foo: "bar" });
+    expect(extractBeeminderError(400, body)).toBe(
+      "Beeminder API error (HTTP 400).",
+    );
+  });
+});
 
 describe("formatTime", () => {
   it("formats 0 seconds", () => {
