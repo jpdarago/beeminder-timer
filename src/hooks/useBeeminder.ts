@@ -63,6 +63,23 @@ export function useBeeminder(username: string, authToken: string) {
     }
   }, [goals, goalSlug]);
 
+  // Persist goalSlug to settings whenever it changes
+  useEffect(() => {
+    if (!goalSlug) return;
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (raw) {
+        const settings = JSON.parse(raw) as StoredSettings;
+        if (settings.goalSlug !== goalSlug) {
+          settings.goalSlug = goalSlug;
+          localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [goalSlug]);
+
   const refreshGoals = async () => {
     if (!username || !authToken) {
       setGoalsError("Username and auth token are required to load goals.");
