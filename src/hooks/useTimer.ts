@@ -4,7 +4,6 @@ import { TIMER_STATE_KEY } from "../constants.ts";
 import { formatTime } from "../utils.ts";
 
 const ding = new Audio("notification.mp3");
-ding.volume = 0.7;
 
 export function loadPersistedTimerState(): StoredTimerState | null {
   try {
@@ -22,6 +21,7 @@ type UseTimerOptions = {
   username: string;
   authToken: string;
   comment: string;
+  volume: number;
   onComplete: () => Promise<void>;
   onFlush: (elapsed: number) => Promise<void>;
 };
@@ -32,6 +32,7 @@ export function useTimer({
   username,
   authToken,
   comment,
+  volume,
   onComplete,
   onFlush,
 }: UseTimerOptions) {
@@ -105,6 +106,7 @@ export function useTimer({
         await onComplete();
 
         try {
+          ding.volume = volume;
           ding.currentTime = 0;
           void ding.play();
         } catch {
@@ -242,6 +244,7 @@ export function useTimer({
       await onFlush(elapsed);
 
       try {
+        ding.volume = volume;
         ding.currentTime = 0;
         void ding.play();
       } catch {
@@ -269,7 +272,15 @@ export function useTimer({
       setStatus("error");
       setError((e as Error).message);
     }
-  }, [remaining, selectedDuration, username, authToken, goalSlug, onFlush]);
+  }, [
+    remaining,
+    selectedDuration,
+    username,
+    authToken,
+    goalSlug,
+    volume,
+    onFlush,
+  ]);
 
   // Keyboard shortcut for space bar
   useEffect(() => {
