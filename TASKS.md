@@ -1,0 +1,36 @@
+# Tasks
+
+## UX improvements
+
+1. [ ] Dark mode — add a toggle that switches CSS custom properties and persists the preference to localStorage
+2. [ ] Debounce YouTube title fetch — currently fires on every keystroke in the comment field; debounce by ~500ms
+3. [ ] Confirm before flush — flush immediately posts partial time with no confirmation, unlike cancel which prompts
+4. [ ] Progress bar or ring — visual indicator of elapsed/remaining time alongside the numeric display
+5. [ ] Notification sound volume control — currently hardcoded to 0.7; add a slider or at least a mute toggle
+6. [ ] Custom duration input — the editable timer display parses awkwardly (splits on `:`, ignores seconds); replace with a proper minutes input or a cleaner mm:ss parser
+7. [ ] Toast/flash messages instead of inline status — flushMessage and error disappear only on next action; auto-dismiss after a few seconds
+8. [ ] Keyboard shortcut hints — show that Space starts/pauses; consider adding shortcuts for flush (`f`) and cancel (`Esc`)
+9. [ ] Mobile responsiveness — duration buttons wrap poorly on narrow screens; test and fix layout at small viewports
+
+## Reliability
+
+10. [ ] Retry on Beeminder post failure — currently goes straight to error state; offer a retry button or auto-retry once
+11. [ ] Validate auth token on save — ping the Beeminder API when saving settings so the user gets immediate feedback if credentials are wrong
+12. [ ] Handle stale deadline on page reload — if the browser was closed during a running timer, the persisted deadline is in the past; detect this and either auto-flush the elapsed time or prompt the user
+13. [ ] Optimistic goalSlug persistence — the selected goal is only saved to localStorage when the user clicks the settings save button; save it on change so it survives reloads without explicit save
+
+## Code quality
+
+14. [ ] Remove `console.log` calls — currently scattered throughout hooks for debugging; strip them or gate behind a debug flag
+15. [x] Save goalSlug on selection change — `useBeeminder` manages goalSlug but doesn't persist it to `SETTINGS_KEY` when it changes, only when settings are explicitly saved
+16. [ ] Add `useSettings` tests — the other two hooks have tests but useSettings does not
+17. [ ] Add integration/smoke test — render the full `<App />` component and verify the basic flow (select goal, start timer, see countdown)
+18. [ ] Strict `exhaustive-deps` — two eslint-disable comments suppress `react-hooks/exhaustive-deps`; refactor to eliminate them
+
+## Features
+
+19. [ ] Session history — show a log of recently posted datapoints (stored locally or fetched from Beeminder)
+20. [ ] Multiple timer presets per goal — let users save named presets (e.g. "deep work 45m", "quick check 10m")
+21. [ ] Pomodoro mode — alternating focus/break intervals with configurable lengths
+22. [ ] Offline queue — if the Beeminder post fails due to network, queue it and retry when connectivity returns
+23. [x] PWA / installable — add a service worker and manifest so the app can be installed and work offline
