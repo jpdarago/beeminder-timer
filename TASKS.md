@@ -44,3 +44,4 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 - [ ] 21\. Pomodoro mode — alternating focus/break intervals with configurable lengths
 - [x] 22\. Offline queue — if the Beeminder post fails due to network, queue it and retry when connectivity returns (https://github.com/jpdarago/beeminder-timer/issues/1)
 - [x] 23\. PWA / installable — add a service worker and manifest so the app can be installed and work offline
+- [ ] 24\. Auto renew sessions - Have a checkbox that when ticked, will start a new session as soon as the previous one finishes. E.g. to do repeated 10 minute sessions.
