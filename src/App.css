@@ -139,6 +139,17 @@ select:focus {
   opacity: 0.75;
 }
 
+/* === Checkbox Labels (inline) === */
+.auto-renew-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.auto-renew-label input[type="checkbox"] {
+  width: auto;
+}
+
 /* === Progress Ring === */
 .progress-ring-wrapper {
   position: relative;
