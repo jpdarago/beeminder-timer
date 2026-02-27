@@ -5,6 +5,20 @@ import { formatTime } from "../utils.ts";
 
 const ding = new Audio("notification.mp3");
 
+async function showNotification(title: string, options: NotificationOptions) {
+  if ("Notification" in window && Notification.permission !== "granted") return;
+  try {
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification(title, options);
+    } else if ("Notification" in window) {
+      new Notification(title, options);
+    }
+  } catch {
+    // ignore — notification is best-effort
+  }
+}
+
 export function loadPersistedTimerState(): StoredTimerState | null {
   try {
     const raw = localStorage.getItem(TIMER_STATE_KEY);
@@ -115,14 +129,12 @@ export function useTimer({
           // ignore
         }
 
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification("Session complete!", {
-            body: `Logged session for ${goalSlug} to Beeminder.`,
-            icon: "bee.svg",
-            silent: false,
-            requireInteraction: false,
-          });
-        }
+        void showNotification("Session complete!", {
+          body: `Logged session for ${goalSlug} to Beeminder.`,
+          icon: "bee.svg",
+          silent: false,
+          requireInteraction: false,
+        });
 
         if (autoRenew) {
           const now = Date.now();
@@ -284,14 +296,12 @@ export function useTimer({
       const value = elapsed / 60;
       setFlushMessage(`Logged ${value.toFixed(2)} minutes to Beeminder.`);
 
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("Timer flushed!", {
-          body: `Logged ${value.toFixed(2)} minutes for ${goalSlug} to Beeminder.`,
-          icon: "bee.svg",
-          silent: false,
-          requireInteraction: false,
-        });
-      }
+      void showNotification("Timer flushed!", {
+        body: `Logged ${value.toFixed(2)} minutes for ${goalSlug} to Beeminder.`,
+        icon: "bee.svg",
+        silent: false,
+        requireInteraction: false,
+      });
     } catch (e) {
       setStatus("error");
       setError((e as Error).message);
