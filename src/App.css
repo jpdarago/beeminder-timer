@@ -148,25 +148,27 @@ select:focus {
 }
 
 .btn-toggle {
-  background: #8b6bba;
-  color: rgb(255 255 255 / 85%);
-  box-shadow: 0 2px 6px rgb(106 76 147 / 30%);
+  background: transparent;
+  color: var(--bee-purple);
+  border: 2px solid var(--panel-border);
+  box-shadow: none;
   padding: 0.5rem 0.8rem;
   font-size: 1.1rem;
 }
 
 .btn-toggle:hover {
-  background: #9b7cc8;
+  background: #f0e6fa;
 }
 
 .btn-toggle.active {
-  background: #f0e6fa;
-  color: var(--bee-purple);
+  background: var(--bee-purple);
+  color: #fff;
   border: 2px solid var(--bee-purple);
+  box-shadow: 0 2px 6px rgb(106 76 147 / 30%);
 }
 
 .btn-toggle.active:hover {
-  background: #e4d4f4;
+  background: #7b5baa;
 }
 
 [data-theme="dark"] .btn-toggle {
