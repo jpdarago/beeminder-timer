@@ -150,7 +150,7 @@ select:focus {
 .btn-toggle {
   background: transparent;
   color: var(--bee-purple);
-  border: 2px solid var(--panel-border);
+  border: 2px solid var(--bee-purple);
   box-shadow: none;
   padding: 0.5rem 0.8rem;
   font-size: 1.1rem;
