@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "./App.css";
-import { THIRTY_MINUTES, durations } from "./constants.ts";
+import { THIRTY_MINUTES, POMODORO_BREAK, durations } from "./constants.ts";
 import { getYouTubeTitle, NetworkError } from "./utils.ts";
 import { useSettings } from "./hooks/useSettings.ts";
 import { useBeeminder } from "./hooks/useBeeminder.ts";
@@ -18,6 +18,7 @@ const App: React.FC = () => {
   const [autoRenew, setAutoRenew] = useState(
     persistedTimer?.autoRenew ?? false,
   );
+  const [pomodoro, setPomodoro] = useState(persistedTimer?.pomodoro ?? false);
   const [youtubeTitle, setYoutubeTitle] = useState<string | null>(null);
 
   const { themePreference, setThemePreference } = useTheme();
@@ -88,6 +89,7 @@ const App: React.FC = () => {
     comment,
     volume,
     autoRenew,
+    pomodoro,
     onComplete,
     onFlush,
   });
@@ -195,14 +197,22 @@ const App: React.FC = () => {
           <div className="youtube-title">YouTube Title: {youtubeDisplay}</div>
         )}
 
-        <label className="auto-renew-label">
-          <input
-            type="checkbox"
-            checked={autoRenew}
-            onChange={(e) => setAutoRenew(e.target.checked)}
-          />
-          Auto-renew session
-        </label>
+        <div className="toggle-buttons">
+          <button
+            className={`btn btn-toggle ${autoRenew ? "active" : ""}`}
+            onClick={() => setAutoRenew((v) => !v)}
+            title="Auto-renew session"
+          >
+            🔁
+          </button>
+          <button
+            className={`btn btn-toggle ${pomodoro ? "active" : ""}`}
+            onClick={() => setPomodoro((v) => !v)}
+            title="Pomodoro mode (5-min breaks)"
+          >
+            🍅
+          </button>
+        </div>
 
         {timer.status === "idle" ? (
           <div className="duration-input-wrapper">
@@ -220,27 +230,31 @@ const App: React.FC = () => {
             <span className="duration-unit">minutes</span>
           </div>
         ) : (
-          <div className="progress-ring-wrapper">
-            <svg className="progress-ring" viewBox="0 0 120 120">
-              <circle className="progress-ring-bg" cx="60" cy="60" r="54" />
-              <circle
-                className="progress-ring-fill"
-                cx="60"
-                cy="60"
-                r="54"
-                strokeDasharray={2 * Math.PI * 54}
-                strokeDashoffset={
-                  2 *
-                  Math.PI *
-                  54 *
-                  (timer.remaining !== null
-                    ? timer.remaining / selectedDuration
-                    : 1)
-                }
-              />
-            </svg>
-            <div className="timer-display">{timer.displayTime}</div>
-          </div>
+          <>
+            {timer.isBreak && <div className="break-indicator">☕ Break</div>}
+            <div className="progress-ring-wrapper">
+              <svg className="progress-ring" viewBox="0 0 120 120">
+                <circle className="progress-ring-bg" cx="60" cy="60" r="54" />
+                <circle
+                  className="progress-ring-fill"
+                  cx="60"
+                  cy="60"
+                  r="54"
+                  strokeDasharray={2 * Math.PI * 54}
+                  strokeDashoffset={
+                    2 *
+                    Math.PI *
+                    54 *
+                    (timer.remaining !== null
+                      ? timer.remaining /
+                        (timer.isBreak ? POMODORO_BREAK : selectedDuration)
+                      : 1)
+                  }
+                />
+              </svg>
+              <div className="timer-display">{timer.displayTime}</div>
+            </div>
+          </>
         )}
 
         {timer.flushMessage && (

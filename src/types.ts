@@ -28,6 +28,8 @@ export type StoredTimerState = {
   selectedDuration: number;
   comment: string;
   autoRenew?: boolean;
+  pomodoro?: boolean;
+  isBreak?: boolean;
 };
 
 export type QueuedDatapoint = {

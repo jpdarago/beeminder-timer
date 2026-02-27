@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Status, StoredTimerState } from "../types.ts";
-import { TIMER_STATE_KEY } from "../constants.ts";
+import { TIMER_STATE_KEY, POMODORO_BREAK } from "../constants.ts";
 import { formatTime } from "../utils.ts";
 
 const ding = new Audio("notification.mp3");
@@ -37,6 +37,7 @@ type UseTimerOptions = {
   comment: string;
   volume: number;
   autoRenew: boolean;
+  pomodoro: boolean;
   onComplete: () => Promise<void>;
   onFlush: (elapsed: number) => Promise<void>;
 };
@@ -49,6 +50,7 @@ export function useTimer({
   comment,
   volume,
   autoRenew,
+  pomodoro,
   onComplete,
   onFlush,
 }: UseTimerOptions) {
@@ -62,6 +64,7 @@ export function useTimer({
   const [status, setStatus] = useState<Status>(persisted?.status ?? "idle");
   const [error, setError] = useState<string | null>(null);
   const [paused, setPaused] = useState(persisted?.paused ?? false);
+  const [isBreak, setIsBreak] = useState(persisted?.isBreak ?? false);
   const [flushMessage, setFlushMessage] = useState<string | null>(null);
 
   const running = status === "running";
@@ -108,6 +111,38 @@ export function useTimer({
     if (remaining !== 0 || status === "posting" || status === "finished")
       return;
 
+    const playDing = () => {
+      try {
+        ding.volume = volume;
+        ding.currentTime = 0;
+        void ding.play();
+      } catch {
+        // ignore
+      }
+    };
+
+    const startNewSession = (duration: number, breakMode: boolean) => {
+      const now = Date.now();
+      setStatus("running");
+      setRemaining(duration);
+      setDeadline(now + duration * 1000);
+      setPaused(false);
+      setIsBreak(breakMode);
+      const timerState: StoredTimerState = {
+        status: "running",
+        remaining: duration,
+        deadline: now + duration * 1000,
+        paused: false,
+        goalSlug,
+        selectedDuration,
+        comment,
+        autoRenew: true,
+        pomodoro,
+        isBreak: breakMode,
+      };
+      localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
+    };
+
     const doComplete = async () => {
       if (!username || !authToken || !goalSlug) {
         setStatus("error");
@@ -116,18 +151,18 @@ export function useTimer({
       }
 
       try {
+        // Break just ended — start new work session without posting
+        if (isBreak) {
+          playDing();
+          startNewSession(selectedDuration, false);
+          return;
+        }
+
         setStatus("posting");
         setError(null);
 
         await onComplete();
-
-        try {
-          ding.volume = volume;
-          ding.currentTime = 0;
-          void ding.play();
-        } catch {
-          // ignore
-        }
+        playDing();
 
         void showNotification("Session complete!", {
           body: `Logged session for ${goalSlug} to Beeminder.`,
@@ -136,23 +171,10 @@ export function useTimer({
           requireInteraction: false,
         });
 
-        if (autoRenew) {
-          const now = Date.now();
-          setStatus("running");
-          setRemaining(selectedDuration);
-          setDeadline(now + selectedDuration * 1000);
-          setPaused(false);
-          const timerState: StoredTimerState = {
-            status: "running",
-            remaining: selectedDuration,
-            deadline: now + selectedDuration * 1000,
-            paused: false,
-            goalSlug,
-            selectedDuration,
-            comment,
-            autoRenew: true,
-          };
-          localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
+        if (autoRenew && pomodoro) {
+          startNewSession(POMODORO_BREAK, true);
+        } else if (autoRenew) {
+          startNewSession(selectedDuration, false);
         } else {
           setStatus("finished");
           localStorage.removeItem(TIMER_STATE_KEY);
@@ -181,6 +203,7 @@ export function useTimer({
     setFlushMessage(null);
     setStatus("running");
     setPaused(false);
+    setIsBreak(false);
     setRemaining(selectedDuration);
     const now = Date.now();
     setDeadline(now + selectedDuration * 1000);
@@ -194,9 +217,19 @@ export function useTimer({
       selectedDuration,
       comment,
       autoRenew,
+      pomodoro,
+      isBreak: false,
     };
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
-  }, [goalSlug, username, authToken, selectedDuration, comment, autoRenew]);
+  }, [
+    goalSlug,
+    username,
+    authToken,
+    selectedDuration,
+    comment,
+    autoRenew,
+    pomodoro,
+  ]);
 
   const cancelTimer = useCallback(() => {
     if (
@@ -244,6 +277,8 @@ export function useTimer({
       selectedDuration,
       comment,
       autoRenew,
+      pomodoro,
+      isBreak,
     };
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
   }, [
@@ -255,6 +290,8 @@ export function useTimer({
     selectedDuration,
     comment,
     autoRenew,
+    pomodoro,
+    isBreak,
   ]);
 
   const flushTimer = useCallback(async () => {
@@ -361,6 +398,7 @@ export function useTimer({
     error,
     paused,
     running,
+    isBreak,
     flushMessage,
     displayTime,
     startTimer,
