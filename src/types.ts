@@ -27,6 +27,7 @@ export type StoredTimerState = {
   goalSlug: string;
   selectedDuration: number;
   comment: string;
+  autoRenew?: boolean;
 };
 
 export type QueuedDatapoint = {

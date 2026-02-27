@@ -15,6 +15,9 @@ const App: React.FC = () => {
     persistedTimer?.selectedDuration ?? THIRTY_MINUTES,
   );
   const [comment, setComment] = useState(persistedTimer?.comment ?? "");
+  const [autoRenew, setAutoRenew] = useState(
+    persistedTimer?.autoRenew ?? false,
+  );
   const [youtubeTitle, setYoutubeTitle] = useState<string | null>(null);
 
   const { themePreference, setThemePreference } = useTheme();
@@ -84,6 +87,7 @@ const App: React.FC = () => {
     authToken,
     comment,
     volume,
+    autoRenew,
     onComplete,
     onFlush,
   });
@@ -190,6 +194,15 @@ const App: React.FC = () => {
         {youtubeDisplay && (
           <div className="youtube-title">YouTube Title: {youtubeDisplay}</div>
         )}
+
+        <label className="auto-renew-label">
+          <input
+            type="checkbox"
+            checked={autoRenew}
+            onChange={(e) => setAutoRenew(e.target.checked)}
+          />
+          Auto-renew session
+        </label>
 
         {timer.status === "idle" ? (
           <div className="duration-input-wrapper">

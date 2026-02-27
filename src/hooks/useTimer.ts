@@ -22,6 +22,7 @@ type UseTimerOptions = {
   authToken: string;
   comment: string;
   volume: number;
+  autoRenew: boolean;
   onComplete: () => Promise<void>;
   onFlush: (elapsed: number) => Promise<void>;
 };
@@ -33,6 +34,7 @@ export function useTimer({
   authToken,
   comment,
   volume,
+  autoRenew,
   onComplete,
   onFlush,
 }: UseTimerOptions) {
@@ -113,9 +115,6 @@ export function useTimer({
           // ignore
         }
 
-        setStatus("finished");
-        localStorage.removeItem(TIMER_STATE_KEY);
-
         if ("Notification" in window && Notification.permission === "granted") {
           new Notification("Session complete!", {
             body: `Logged session for ${goalSlug} to Beeminder.`,
@@ -123,6 +122,28 @@ export function useTimer({
             silent: false,
             requireInteraction: false,
           });
+        }
+
+        if (autoRenew) {
+          const now = Date.now();
+          setStatus("running");
+          setRemaining(selectedDuration);
+          setDeadline(now + selectedDuration * 1000);
+          setPaused(false);
+          const timerState: StoredTimerState = {
+            status: "running",
+            remaining: selectedDuration,
+            deadline: now + selectedDuration * 1000,
+            paused: false,
+            goalSlug,
+            selectedDuration,
+            comment,
+            autoRenew: true,
+          };
+          localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
+        } else {
+          setStatus("finished");
+          localStorage.removeItem(TIMER_STATE_KEY);
         }
       } catch (e) {
         setStatus("error");
@@ -160,9 +181,10 @@ export function useTimer({
       goalSlug,
       selectedDuration,
       comment,
+      autoRenew,
     };
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
-  }, [goalSlug, username, authToken, selectedDuration, comment]);
+  }, [goalSlug, username, authToken, selectedDuration, comment, autoRenew]);
 
   const cancelTimer = useCallback(() => {
     if (
@@ -209,6 +231,7 @@ export function useTimer({
       goalSlug,
       selectedDuration,
       comment,
+      autoRenew,
     };
     localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(timerState));
   }, [
@@ -219,6 +242,7 @@ export function useTimer({
     goalSlug,
     selectedDuration,
     comment,
+    autoRenew,
   ]);
 
   const flushTimer = useCallback(async () => {

@@ -26,10 +26,11 @@ function makeOptions(overrides: Partial<Parameters<typeof useTimer>[0]> = {}) {
     authToken: "testtoken",
     comment: "",
     volume: 0.7,
+    autoRenew: false,
     onComplete: vi.fn().mockResolvedValue(undefined),
     onFlush: vi.fn().mockResolvedValue(undefined),
     ...overrides,
-  };
+  } as Parameters<typeof useTimer>[0];
 }
 
 describe("useTimer", () => {
@@ -292,6 +293,75 @@ describe("useTimer", () => {
     });
 
     expect(result.current.flushMessage).toBe("No time elapsed to flush.");
+  });
+
+  it("auto-renew restarts timer after completion", async () => {
+    const onComplete = vi.fn().mockResolvedValue(undefined);
+    const now = Date.now();
+    vi.setSystemTime(now);
+
+    const { result } = renderHook(() =>
+      useTimer(
+        makeOptions({ selectedDuration: 1, onComplete, autoRenew: true }),
+      ),
+    );
+
+    act(() => {
+      result.current.startTimer();
+    });
+
+    // Advance past the deadline
+    vi.setSystemTime(now + 2000);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    // Let the async onComplete resolve
+    await vi.waitFor(() => {
+      expect(onComplete).toHaveBeenCalled();
+    });
+
+    // Should restart instead of finishing
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("running");
+    });
+    expect(result.current.remaining).toBe(1);
+
+    // localStorage should have the new timer state
+    const stored = JSON.parse(localStorage.getItem(TIMER_STATE_KEY)!);
+    expect(stored.status).toBe("running");
+    expect(stored.autoRenew).toBe(true);
+  });
+
+  it("auto-renew false still finishes normally", async () => {
+    const onComplete = vi.fn().mockResolvedValue(undefined);
+    const now = Date.now();
+    vi.setSystemTime(now);
+
+    const { result } = renderHook(() =>
+      useTimer(
+        makeOptions({ selectedDuration: 1, onComplete, autoRenew: false }),
+      ),
+    );
+
+    act(() => {
+      result.current.startTimer();
+    });
+
+    // Advance past the deadline
+    vi.setSystemTime(now + 2000);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    await vi.waitFor(() => {
+      expect(onComplete).toHaveBeenCalled();
+    });
+
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("finished");
+    });
+    expect(localStorage.getItem(TIMER_STATE_KEY)).toBeNull();
   });
 
   it("updates document title when running", () => {
