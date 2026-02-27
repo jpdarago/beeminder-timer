@@ -12,4 +12,6 @@ export const THEME_KEY = "beeminderTimerTheme";
 
 export const VOLUME_KEY = "beeminderTimerVolume";
 
+export const POMODORO_BREAK = 5 * 60; // 5 minutes in seconds
+
 export const durations = [5, 10, 15, 20, 30, 45, 60]; // minutes

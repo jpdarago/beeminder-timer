@@ -139,15 +139,60 @@ select:focus {
   opacity: 0.75;
 }
 
-/* === Checkbox Labels (inline) === */
-.auto-renew-label {
+/* === Toggle Buttons === */
+.toggle-buttons {
   display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
 }
 
-.auto-renew-label input[type="checkbox"] {
-  width: auto;
+.btn-toggle {
+  background: var(--bee-purple-dark);
+  color: rgb(255 255 255 / 60%);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+  padding: 0.5rem 0.8rem;
+  font-size: 1.1rem;
+}
+
+.btn-toggle:hover {
+  background: #5a3580;
+}
+
+.btn-toggle.active {
+  background: #e8daf5;
+  color: var(--bee-purple);
+  border: 2px solid var(--bee-purple);
+}
+
+.btn-toggle.active:hover {
+  background: #dccbee;
+}
+
+[data-theme="dark"] .btn-toggle {
+  background: #2d2b45;
+  color: rgb(255 255 255 / 40%);
+}
+
+[data-theme="dark"] .btn-toggle:hover {
+  background: #3d3a55;
+}
+
+[data-theme="dark"] .btn-toggle.active {
+  background: #3d3560;
+  color: #c4a6e8;
+  border-color: #9b7cc8;
+}
+
+[data-theme="dark"] .btn-toggle.active:hover {
+  background: #4a4070;
+}
+
+.break-indicator {
+  font-size: 0.95rem;
+  color: var(--bee-purple);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 /* === Progress Ring === */

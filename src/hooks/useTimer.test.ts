@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useTimer } from "./useTimer.ts";
-import { TIMER_STATE_KEY } from "../constants.ts";
+import { TIMER_STATE_KEY, POMODORO_BREAK } from "../constants.ts";
 
 // Mock Audio
 vi.stubGlobal(
@@ -27,6 +27,7 @@ function makeOptions(overrides: Partial<Parameters<typeof useTimer>[0]> = {}) {
     comment: "",
     volume: 0.7,
     autoRenew: false,
+    pomodoro: false,
     onComplete: vi.fn().mockResolvedValue(undefined),
     onFlush: vi.fn().mockResolvedValue(undefined),
     ...overrides,
@@ -362,6 +363,133 @@ describe("useTimer", () => {
       expect(result.current.status).toBe("finished");
     });
     expect(localStorage.getItem(TIMER_STATE_KEY)).toBeNull();
+  });
+
+  it("pomodoro mode inserts a break after work session", async () => {
+    const onComplete = vi.fn().mockResolvedValue(undefined);
+    const now = Date.now();
+    vi.setSystemTime(now);
+
+    const { result } = renderHook(() =>
+      useTimer(
+        makeOptions({
+          selectedDuration: 1,
+          onComplete,
+          autoRenew: true,
+          pomodoro: true,
+        }),
+      ),
+    );
+
+    act(() => {
+      result.current.startTimer();
+    });
+
+    // Advance past the deadline
+    vi.setSystemTime(now + 2000);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    // onComplete should be called (work session logged)
+    await vi.waitFor(() => {
+      expect(onComplete).toHaveBeenCalled();
+    });
+
+    // Should start a break session
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("running");
+    });
+    expect(result.current.isBreak).toBe(true);
+    expect(result.current.remaining).toBe(POMODORO_BREAK);
+  });
+
+  it("break session ends and starts new work session without posting", async () => {
+    const onComplete = vi.fn().mockResolvedValue(undefined);
+    const now = Date.now();
+    vi.setSystemTime(now);
+
+    // Start with a persisted break state
+    localStorage.setItem(
+      TIMER_STATE_KEY,
+      JSON.stringify({
+        status: "running",
+        remaining: 1,
+        deadline: now + 1000,
+        paused: false,
+        goalSlug: "test-goal",
+        selectedDuration: 1800,
+        comment: "",
+        autoRenew: true,
+        pomodoro: true,
+        isBreak: true,
+      }),
+    );
+
+    const { result } = renderHook(() =>
+      useTimer(
+        makeOptions({
+          selectedDuration: 1800,
+          onComplete,
+          autoRenew: true,
+          pomodoro: true,
+        }),
+      ),
+    );
+
+    expect(result.current.isBreak).toBe(true);
+    expect(result.current.status).toBe("running");
+
+    // Advance past the break deadline
+    vi.setSystemTime(now + 2000);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    // Should start a new work session WITHOUT calling onComplete
+    await vi.waitFor(() => {
+      expect(result.current.remaining).toBe(1800);
+    });
+    expect(result.current.isBreak).toBe(false);
+    expect(result.current.status).toBe("running");
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it("pomodoro without autoRenew finishes normally", async () => {
+    const onComplete = vi.fn().mockResolvedValue(undefined);
+    const now = Date.now();
+    vi.setSystemTime(now);
+
+    const { result } = renderHook(() =>
+      useTimer(
+        makeOptions({
+          selectedDuration: 1,
+          onComplete,
+          autoRenew: false,
+          pomodoro: true,
+        }),
+      ),
+    );
+
+    act(() => {
+      result.current.startTimer();
+    });
+
+    // Advance past the deadline
+    vi.setSystemTime(now + 2000);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    await vi.waitFor(() => {
+      expect(onComplete).toHaveBeenCalled();
+    });
+
+    // Should finish normally (no break), since autoRenew is off
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("finished");
+    });
+    expect(result.current.isBreak).toBe(false);
   });
 
   it("updates document title when running", () => {
