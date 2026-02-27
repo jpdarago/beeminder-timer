@@ -147,7 +147,7 @@ select:focus {
   margin-bottom: 0.7rem;
 }
 
-.btn-toggle {
+.btn.btn-toggle {
   background: transparent;
   color: var(--bee-purple);
   border: 2px solid var(--bee-purple);
@@ -156,37 +156,38 @@ select:focus {
   font-size: 1.1rem;
 }
 
-.btn-toggle:hover {
+.btn.btn-toggle:hover {
   background: #f0e6fa;
 }
 
-.btn-toggle.active {
+.btn.btn-toggle.active {
   background: var(--bee-purple);
   color: #fff;
   border: 2px solid var(--bee-purple);
   box-shadow: 0 2px 6px rgb(106 76 147 / 30%);
 }
 
-.btn-toggle.active:hover {
+.btn.btn-toggle.active:hover {
   background: #7b5baa;
 }
 
-[data-theme="dark"] .btn-toggle {
+[data-theme="dark"] .btn.btn-toggle {
   background: #4a4070;
   color: rgb(255 255 255 / 75%);
+  border-color: #9b7cc8;
 }
 
-[data-theme="dark"] .btn-toggle:hover {
+[data-theme="dark"] .btn.btn-toggle:hover {
   background: #5a4f80;
 }
 
-[data-theme="dark"] .btn-toggle.active {
+[data-theme="dark"] .btn.btn-toggle.active {
   background: #5a3d8a;
   color: #dbc4f5;
   border-color: #b89ee0;
 }
 
-[data-theme="dark"] .btn-toggle.active:hover {
+[data-theme="dark"] .btn.btn-toggle.active:hover {
   background: #4a4070;
 }
 
