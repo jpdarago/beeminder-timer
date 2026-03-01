@@ -264,6 +264,7 @@ const App: React.FC = () => {
         {timer.status === "idle" && (
           <button className="btn btn-primary" onClick={timer.startTimer}>
             Start ⏱️
+            <span className="shortcut-hint">Space</span>
           </button>
         )}
 
@@ -271,12 +272,14 @@ const App: React.FC = () => {
           <div className="timer-actions">
             <button className="btn btn-secondary" onClick={timer.togglePause}>
               {timer.paused ? "▶️" : "⏸️"}
+              <span className="shortcut-hint">Space</span>
             </button>
             <button className="btn btn-secondary" onClick={timer.cancelTimer}>
-              ❌
+              ❌<span className="shortcut-hint">Esc</span>
             </button>
             <button className="btn btn-secondary" onClick={timer.flushTimer}>
               📤
+              <span className="shortcut-hint">F</span>
             </button>
           </div>
         )}

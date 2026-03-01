@@ -405,6 +405,18 @@ select:focus {
   transform: rotate(90deg);
 }
 
+/* === Shortcut Hints === */
+.shortcut-hint {
+  font-size: 0.65em;
+  font-weight: 500;
+  opacity: 0.6;
+  border: 1px solid currentcolor;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  margin-left: 0.3em;
+  vertical-align: middle;
+}
+
 /* === Status Text === */
 .status-text {
   margin-top: 0.5rem;
