@@ -310,93 +310,96 @@ const App: React.FC = () => {
       )}
 
       <section>
-        <h2>Beeminder settings</h2>
+        <details className="settings-details">
+          <summary>
+            <h2>⚙️ Settings</h2>
+          </summary>
 
-        {settings.hasStoredSettings && !settings.showSettingsForm && (
-          <>
-            <div className="status-text">
-              Using stored settings for user <code>{username}</code>.
+          {settings.hasStoredSettings && !settings.showSettingsForm && (
+            <>
+              <div className="status-text">
+                Using stored settings for user <code>{username}</code>.
+              </div>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => settings.setShowSettingsForm(true)}
+                disabled={timer.running}
+              >
+                ✏️ Edit settings
+              </button>
+            </>
+          )}
+
+          {(!settings.hasStoredSettings || settings.showSettingsForm) && (
+            <>
+              <label>
+                <input
+                  type="text"
+                  value={username}
+                  placeholder="Username..."
+                  onChange={(e) => settings.setUsername(e.target.value)}
+                  disabled={timer.running || settings.validating}
+                />
+              </label>
+
+              <label>
+                <input
+                  type="password"
+                  value={authToken}
+                  placeholder="Beeminder API token..."
+                  onChange={(e) => settings.setAuthToken(e.target.value)}
+                  disabled={timer.running || settings.validating}
+                />
+              </label>
+
+              {settings.validationError && (
+                <div className="error-text">{settings.validationError}</div>
+              )}
+
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => settings.saveSettings(goalSlug)}
+                disabled={settings.validating}
+              >
+                {settings.validating ? "Validating…" : "✅"}
+              </button>
+            </>
+          )}
+          <label>
+            <b>Theme</b>
+            <select
+              value={themePreference}
+              onChange={(e) =>
+                setThemePreference(
+                  e.target.value as "system" | "light" | "dark",
+                )
+              }
+            >
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
+
+          <label>
+            <b>Volume</b>
+            <div className="volume-control">
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+              />
+              <span className="volume-label">
+                {volume === 0 ? "Muted" : `${Math.round(volume * 100)}%`}
+              </span>
             </div>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => settings.setShowSettingsForm(true)}
-              disabled={timer.running}
-            >
-              ✏️ Edit settings
-            </button>
-          </>
-        )}
-
-        {(!settings.hasStoredSettings || settings.showSettingsForm) && (
-          <>
-            <label>
-              <input
-                type="text"
-                value={username}
-                placeholder="Username..."
-                onChange={(e) => settings.setUsername(e.target.value)}
-                disabled={timer.running || settings.validating}
-              />
-            </label>
-
-            <label>
-              <input
-                type="password"
-                value={authToken}
-                placeholder="Beeminder API token..."
-                onChange={(e) => settings.setAuthToken(e.target.value)}
-                disabled={timer.running || settings.validating}
-              />
-            </label>
-
-            {settings.validationError && (
-              <div className="error-text">{settings.validationError}</div>
-            )}
-
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => settings.saveSettings(goalSlug)}
-              disabled={settings.validating}
-            >
-              {settings.validating ? "Validating…" : "✅"}
-            </button>
-          </>
-        )}
-      </section>
-
-      <section>
-        <label>
-          <b>Theme</b>
-          <select
-            value={themePreference}
-            onChange={(e) =>
-              setThemePreference(e.target.value as "system" | "light" | "dark")
-            }
-          >
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </label>
-
-        <label>
-          <b>Volume</b>
-          <div className="volume-control">
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={(e) => setVolume(parseFloat(e.target.value))}
-            />
-            <span className="volume-label">
-              {volume === 0 ? "Muted" : `${Math.round(volume * 100)}%`}
-            </span>
-          </div>
-        </label>
+          </label>
+        </details>
       </section>
     </div>
   );
