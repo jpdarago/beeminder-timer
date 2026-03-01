@@ -378,6 +378,33 @@ select:focus {
   background: #e0e0e0;
 }
 
+/* === Collapsible Settings === */
+.settings-details summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.settings-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-details summary h2 {
+  position: relative;
+  cursor: pointer;
+}
+
+.settings-details summary h2::after {
+  content: "▶";
+  position: absolute;
+  right: 0;
+  font-size: 0.7em;
+  transition: transform 0.2s ease;
+}
+
+.settings-details[open] summary h2::after {
+  transform: rotate(90deg);
+}
+
 /* === Status Text === */
 .status-text {
   margin-top: 0.5rem;

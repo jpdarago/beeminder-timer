@@ -310,60 +310,64 @@ const App: React.FC = () => {
       )}
 
       <section>
-        <h2>Beeminder settings</h2>
+        <details className="settings-details">
+          <summary>
+            <h2>Beeminder settings</h2>
+          </summary>
 
-        {settings.hasStoredSettings && !settings.showSettingsForm && (
-          <>
-            <div className="status-text">
-              Using stored settings for user <code>{username}</code>.
-            </div>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => settings.setShowSettingsForm(true)}
-              disabled={timer.running}
-            >
-              ✏️ Edit settings
-            </button>
-          </>
-        )}
+          {settings.hasStoredSettings && !settings.showSettingsForm && (
+            <>
+              <div className="status-text">
+                Using stored settings for user <code>{username}</code>.
+              </div>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => settings.setShowSettingsForm(true)}
+                disabled={timer.running}
+              >
+                ✏️ Edit settings
+              </button>
+            </>
+          )}
 
-        {(!settings.hasStoredSettings || settings.showSettingsForm) && (
-          <>
-            <label>
-              <input
-                type="text"
-                value={username}
-                placeholder="Username..."
-                onChange={(e) => settings.setUsername(e.target.value)}
-                disabled={timer.running || settings.validating}
-              />
-            </label>
+          {(!settings.hasStoredSettings || settings.showSettingsForm) && (
+            <>
+              <label>
+                <input
+                  type="text"
+                  value={username}
+                  placeholder="Username..."
+                  onChange={(e) => settings.setUsername(e.target.value)}
+                  disabled={timer.running || settings.validating}
+                />
+              </label>
 
-            <label>
-              <input
-                type="password"
-                value={authToken}
-                placeholder="Beeminder API token..."
-                onChange={(e) => settings.setAuthToken(e.target.value)}
-                disabled={timer.running || settings.validating}
-              />
-            </label>
+              <label>
+                <input
+                  type="password"
+                  value={authToken}
+                  placeholder="Beeminder API token..."
+                  onChange={(e) => settings.setAuthToken(e.target.value)}
+                  disabled={timer.running || settings.validating}
+                />
+              </label>
 
-            {settings.validationError && (
-              <div className="error-text">{settings.validationError}</div>
-            )}
+              {settings.validationError && (
+                <div className="error-text">{settings.validationError}</div>
+              )}
 
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => settings.saveSettings(goalSlug)}
-              disabled={settings.validating}
-            >
-              {settings.validating ? "Validating…" : "✅"}
-            </button>
-          </>
-        )}
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => settings.saveSettings(goalSlug)}
+                disabled={settings.validating}
+              >
+                {settings.validating ? "Validating…" : "✅"}
+              </button>
+            </>
+          )}
+        </details>
       </section>
 
       <section>
