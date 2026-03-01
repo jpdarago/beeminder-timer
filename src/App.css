@@ -417,6 +417,10 @@ select:focus {
   vertical-align: middle;
 }
 
+.btn-primary .shortcut-hint {
+  opacity: 0.85;
+}
+
 /* === Status Text === */
 .status-text {
   margin-top: 0.5rem;
