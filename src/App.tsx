@@ -312,7 +312,7 @@ const App: React.FC = () => {
       <section>
         <details className="settings-details">
           <summary>
-            <h2>Beeminder settings</h2>
+            <h2>⚙️ Settings</h2>
           </summary>
 
           {settings.hasStoredSettings && !settings.showSettingsForm && (
@@ -367,40 +367,39 @@ const App: React.FC = () => {
               </button>
             </>
           )}
+          <label>
+            <b>Theme</b>
+            <select
+              value={themePreference}
+              onChange={(e) =>
+                setThemePreference(
+                  e.target.value as "system" | "light" | "dark",
+                )
+              }
+            >
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
+
+          <label>
+            <b>Volume</b>
+            <div className="volume-control">
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+              />
+              <span className="volume-label">
+                {volume === 0 ? "Muted" : `${Math.round(volume * 100)}%`}
+              </span>
+            </div>
+          </label>
         </details>
-      </section>
-
-      <section>
-        <label>
-          <b>Theme</b>
-          <select
-            value={themePreference}
-            onChange={(e) =>
-              setThemePreference(e.target.value as "system" | "light" | "dark")
-            }
-          >
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </label>
-
-        <label>
-          <b>Volume</b>
-          <div className="volume-control">
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={(e) => setVolume(parseFloat(e.target.value))}
-            />
-            <span className="volume-label">
-              {volume === 0 ? "Muted" : `${Math.round(volume * 100)}%`}
-            </span>
-          </div>
-        </label>
       </section>
     </div>
   );
