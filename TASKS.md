@@ -19,7 +19,7 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 - [ ] 5\. Notification sound volume control — currently hardcoded to 0.7; add a slider or at least a mute toggle
 - [x] 6\. Custom duration input — the editable timer display parses awkwardly (splits on `:`, ignores seconds); replace with a proper minutes input or a cleaner mm:ss parser
 - [ ] 7\. Toast/flash messages instead of inline status — flushMessage and error disappear only on next action; auto-dismiss after a few seconds
-- [ ] 8\. Keyboard shortcut hints — show that Space starts/pauses; consider adding shortcuts for flush (`f`) and cancel (`Esc`)
+- [x] 8\. Keyboard shortcut hints — show that Space starts/pauses; consider adding shortcuts for flush (`f`) and cancel (`Esc`)
 - [x] 9\. Mobile responsiveness — duration buttons wrap poorly on narrow screens; test and fix layout at small viewports
 
 ## Reliability

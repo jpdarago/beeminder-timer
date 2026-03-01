@@ -353,18 +353,19 @@ export function useTimer({
     onFlush,
   ]);
 
-  // Keyboard shortcut for space bar
+  // Keyboard shortcuts: Space (start/pause), f (flush), Escape (cancel)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === " ") {
-        const activeElement = document.activeElement;
-        if (
-          activeElement instanceof HTMLInputElement ||
-          activeElement instanceof HTMLTextAreaElement
-        ) {
-          return;
-        }
+      const activeElement = document.activeElement;
+      if (
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement instanceof HTMLSelectElement
+      ) {
+        return;
+      }
 
+      if (event.key === " ") {
         event.preventDefault();
         if (!goalSlug || !username || !authToken || selectedDuration <= 0)
           return;
@@ -373,6 +374,12 @@ export function useTimer({
         } else if (status === "running" || paused) {
           togglePause();
         }
+      } else if (event.key === "f" && status === "running") {
+        event.preventDefault();
+        flushTimer();
+      } else if (event.key === "Escape" && status === "running") {
+        event.preventDefault();
+        cancelTimer();
       }
     };
 
@@ -387,6 +394,8 @@ export function useTimer({
     paused,
     startTimer,
     togglePause,
+    flushTimer,
+    cancelTimer,
   ]);
 
   const displayTime =
