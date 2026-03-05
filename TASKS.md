@@ -21,6 +21,7 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 - [ ] 7\. Toast/flash messages instead of inline status — flushMessage and error disappear only on next action; auto-dismiss after a few seconds
 - [x] 8\. Keyboard shortcut hints — show that Space starts/pauses; consider adding shortcuts for flush (`f`) and cancel (`Esc`)
 - [x] 9\. Mobile responsiveness — duration buttons wrap poorly on narrow screens; test and fix layout at small viewports
+- [ ] 10\. When I switch goals, it should reset any finished timers, I shouldn't have to do it manually.
 
 ## Reliability
 
