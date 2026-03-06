@@ -94,6 +94,42 @@ const App: React.FC = () => {
     onFlush,
   });
 
+  const handleGoalChange = useCallback(
+    async (newGoal: string) => {
+      if (timer.running) {
+        if (
+          !window.confirm(
+            "Switch goal? Elapsed time will be logged to Beeminder.",
+          )
+        )
+          return;
+        await timer.flushTimer();
+      } else if (timer.status !== "idle") {
+        timer.resetAfterFinish();
+      }
+      beeminder.setGoalSlug(newGoal);
+    },
+    [timer, beeminder],
+  );
+
+  const handleDurationChange = useCallback(
+    async (durationSecs: number) => {
+      if (timer.running) {
+        if (
+          !window.confirm(
+            "Change duration? Elapsed time will be logged to Beeminder.",
+          )
+        )
+          return;
+        await timer.flushTimer();
+      } else if (timer.status !== "idle") {
+        timer.resetAfterFinish();
+      }
+      setSelectedDuration(durationSecs);
+    },
+    [timer, setSelectedDuration],
+  );
+
   // Fetch YouTube title if comment is a YouTube URL (debounced 200ms)
   useEffect(() => {
     const trimmed = comment.trim();
@@ -133,8 +169,8 @@ const App: React.FC = () => {
           <b> Goal </b>
           <select
             value={goalSlug || (goals.length > 0 ? goals[0].slug : "")}
-            onChange={(e) => beeminder.setGoalSlug(e.target.value)}
-            disabled={timer.running || goals.length === 0}
+            onChange={(e) => handleGoalChange(e.target.value)}
+            disabled={goals.length === 0}
           >
             {goals.length === 0 ? (
               <option value="">No goals loaded</option>
@@ -175,8 +211,7 @@ const App: React.FC = () => {
             <button
               key={duration}
               className="btn btn-secondary"
-              onClick={() => setSelectedDuration(duration * 60)}
-              disabled={timer.running}
+              onClick={() => handleDurationChange(duration * 60)}
             >
               {duration} min
             </button>
