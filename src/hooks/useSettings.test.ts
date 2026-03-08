@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useSettings } from "./useSettings.ts";
 import { SETTINGS_KEY } from "../constants.ts";
@@ -6,6 +6,10 @@ import { SETTINGS_KEY } from "../constants.ts";
 describe("useSettings", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("starts with empty state when no stored settings", () => {
@@ -56,7 +60,11 @@ describe("useSettings", () => {
     expect(result.current.showSettingsForm).toBe(true);
   });
 
-  it("saveSettings persists to localStorage and hides form", () => {
+  it("saveSettings persists to localStorage and hides form", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ username: "bob" }), { status: 200 }),
+    );
+
     const { result } = renderHook(() => useSettings());
 
     act(() => {
@@ -65,8 +73,8 @@ describe("useSettings", () => {
     act(() => {
       result.current.setAuthToken("secret");
     });
-    act(() => {
-      result.current.saveSettings("my-goal");
+    await act(async () => {
+      await result.current.saveSettings("my-goal");
     });
 
     const stored = JSON.parse(localStorage.getItem(SETTINGS_KEY)!);
@@ -79,23 +87,21 @@ describe("useSettings", () => {
     expect(result.current.showSettingsForm).toBe(false);
   });
 
-  it("saveSettings without credentials keeps form open", () => {
+  it("saveSettings without credentials keeps form open", async () => {
     const { result } = renderHook(() => useSettings());
 
-    act(() => {
-      result.current.saveSettings("my-goal");
+    await act(async () => {
+      await result.current.saveSettings("my-goal");
     });
 
-    // Still persists to localStorage
-    const stored = JSON.parse(localStorage.getItem(SETTINGS_KEY)!);
-    expect(stored).toEqual({
-      username: "",
-      authToken: "",
-      goalSlug: "my-goal",
-    });
-    // But form stays open and hasStoredSettings remains false
+    // Does not persist to localStorage when credentials are empty
+    expect(localStorage.getItem(SETTINGS_KEY)).toBeNull();
+    // Form stays open and hasStoredSettings remains false
     expect(result.current.hasStoredSettings).toBe(false);
     expect(result.current.showSettingsForm).toBe(true);
+    expect(result.current.validationError).toBe(
+      "Username and auth token are required.",
+    );
   });
 
   it("setUsername updates username", () => {
