@@ -26,3 +26,7 @@ The entire app lives in **`src/App.tsx`** — one `App` component with all state
 - **Comment field**: Accepts free text; if a YouTube URL is pasted, it auto-fetches the video title via oEmbed.
 - **Keyboard shortcut**: Space bar starts timer (when idle) or toggles pause (when running), unless an input is focused.
 - **Notifications**: Browser notification + audio ding (`notification.mp3`) on completion.
+
+## Privacy
+
+Never persist personal information (names, emails, addresses, personal identifiers) to memory files or any other persistent storage. This includes data encountered in code, configs, issues, or conversations.

@@ -23,6 +23,7 @@ This file contains tasks to do. I will write these as I come up with ideas at wo
 - [x] 9\. Mobile responsiveness — duration buttons wrap poorly on narrow screens; test and fix layout at small viewports
 - [ ] 10\. When I switch goals, it should reset any finished timers, I shouldn't have to do it manually.
 - [ ] 11\. When clicking one of the duration selectors (e.g. 10 min), if the timer is at 0, it should reset it to the time selected.
+- [ ] 12\. On Pomodoro mode, the notification messages should be descriptive (e.g. "Back to work!" once the break timer finishes, and "Take a break!" when the work timer finishes).
 
 ## Reliability
 
