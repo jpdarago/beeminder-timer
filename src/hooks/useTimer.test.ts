@@ -6,7 +6,12 @@ import { TIMER_STATE_KEY, POMODORO_BREAK } from "../constants.ts";
 // Mock Audio
 vi.stubGlobal(
   "Audio",
-  vi.fn(() => ({ volume: 0, currentTime: 0, play: vi.fn() })),
+  vi.fn(() => ({
+    volume: 0,
+    currentTime: 0,
+    play: vi.fn().mockResolvedValue(undefined),
+    pause: vi.fn(),
+  })),
 );
 
 // Mock Notification

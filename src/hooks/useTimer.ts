@@ -83,13 +83,6 @@ export function useTimer({
     document.title = `${m}:${s} · Beeminder Timer`;
   }, [remaining]);
 
-  // Ask for notification permission once
-  useEffect(() => {
-    if ("Notification" in window) {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
-
   // Countdown effect with pause support
   useEffect(() => {
     if (status !== "running" || deadline === null) return;
@@ -199,6 +192,24 @@ export function useTimer({
       setError("Username and auth token are required to start.");
       return;
     }
+
+    // Request notification permission from user gesture (required on iOS PWAs)
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+
+    // Unlock audio for later programmatic playback (iOS requires first play in user gesture)
+    try {
+      const p = ding.play();
+      if (p)
+        p.then(() => {
+          ding.pause();
+          ding.currentTime = 0;
+        }).catch(() => {});
+    } catch {
+      /* ignore — best-effort unlock */
+    }
+
     setError(null);
     setFlushMessage(null);
     setStatus("running");
