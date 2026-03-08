@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
+    "preview:tunnel": "npx serve dist -l 4173 & npx ngrok http 4173",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "husky"
