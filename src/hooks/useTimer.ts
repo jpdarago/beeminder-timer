@@ -6,12 +6,18 @@ import { formatTime } from "../utils.ts";
 const ding = new Audio("notification.mp3");
 
 async function showNotification(title: string, options: NotificationOptions) {
-  if ("Notification" in window && Notification.permission !== "granted") return;
+  if (!("Notification" in window) || Notification.permission !== "granted")
+    return;
   try {
-    if ("serviceWorker" in navigator) {
-      const registration = await navigator.serviceWorker.ready;
+    // Prefer SW notifications (required on iOS PWAs), but don't await
+    // navigator.serviceWorker.ready — it hangs if no SW is registered (e.g. dev mode).
+    const registration =
+      "serviceWorker" in navigator
+        ? await navigator.serviceWorker.getRegistration()
+        : undefined;
+    if (registration?.active) {
       await registration.showNotification(title, options);
-    } else if ("Notification" in window) {
+    } else {
       new Notification(title, options);
     }
   } catch {
