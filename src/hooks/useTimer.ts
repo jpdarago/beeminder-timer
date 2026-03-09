@@ -6,12 +6,18 @@ import { formatTime } from "../utils.ts";
 const ding = new Audio("notification.mp3");
 
 async function showNotification(title: string, options: NotificationOptions) {
-  if ("Notification" in window && Notification.permission !== "granted") return;
+  if (!("Notification" in window) || Notification.permission !== "granted")
+    return;
   try {
-    if ("serviceWorker" in navigator) {
-      const registration = await navigator.serviceWorker.ready;
+    // Prefer SW notifications (required on iOS PWAs), but don't await
+    // navigator.serviceWorker.ready — it hangs if no SW is registered (e.g. dev mode).
+    const registration =
+      "serviceWorker" in navigator
+        ? await navigator.serviceWorker.getRegistration()
+        : undefined;
+    if (registration?.active) {
       await registration.showNotification(title, options);
-    } else if ("Notification" in window) {
+    } else {
       new Notification(title, options);
     }
   } catch {
@@ -82,13 +88,6 @@ export function useTimer({
     const s = (remaining % 60).toString().padStart(2, "0");
     document.title = `${m}:${s} · Beeminder Timer`;
   }, [remaining]);
-
-  // Ask for notification permission once
-  useEffect(() => {
-    if ("Notification" in window) {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
 
   // Countdown effect with pause support
   useEffect(() => {
@@ -199,6 +198,26 @@ export function useTimer({
       setError("Username and auth token are required to start.");
       return;
     }
+
+    // Request notification permission from user gesture (required on iOS PWAs)
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+
+    // Unlock audio for later programmatic playback (iOS requires first play in user gesture)
+    try {
+      ding.volume = 0;
+      const p = ding.play();
+      if (p)
+        p.then(() => {
+          ding.pause();
+          ding.currentTime = 0;
+          ding.volume = 1;
+        }).catch(() => {});
+    } catch {
+      /* ignore — best-effort unlock */
+    }
+
     setError(null);
     setFlushMessage(null);
     setStatus("running");

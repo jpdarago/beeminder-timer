@@ -47,6 +47,9 @@ export default defineConfig({
       },
     }),
   ],
+  preview: {
+    allowedHosts: true,
+  },
   base: "/timer/",
   test: {
     environment: "jsdom",
