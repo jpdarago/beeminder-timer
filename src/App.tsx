@@ -207,7 +207,8 @@ const App: React.FC = () => {
         {timer.error && <div className="error-text">{timer.error}</div>}
 
         <div className="duration-buttons">
-          {import.meta.env.DEV &&
+          {(import.meta.env.DEV ||
+            new URLSearchParams(window.location.search).has("debug")) &&
             [1, 10, 20].map((secs) => (
               <button
                 key={`debug-${secs}`}

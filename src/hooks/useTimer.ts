@@ -206,11 +206,13 @@ export function useTimer({
 
     // Unlock audio for later programmatic playback (iOS requires first play in user gesture)
     try {
+      ding.volume = 0;
       const p = ding.play();
       if (p)
         p.then(() => {
           ding.pause();
           ding.currentTime = 0;
+          ding.volume = 1;
         }).catch(() => {});
     } catch {
       /* ignore — best-effort unlock */
