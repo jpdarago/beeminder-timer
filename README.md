@@ -38,7 +38,14 @@ Pre-commit hooks (husky + lint-staged) auto-format and lint staged files on ever
 
 ## Deployment
 
-Pushes to `main` trigger a GitHub Actions workflow that builds and rsyncs to the production server. The app is served at the `/timer/` base path.
+Pushes to `main` trigger a GitHub Actions workflow that builds the site and
+force-pushes the result to the `deploy` branch. The production server's
+repo-puller polls that branch, pulls it, and runs the `deploy.sh` shipped inside
+it, which copies the files into `/var/www/html/beeminder-timer`. The app is
+served at the `/timer/` base path.
+
+CI cannot deploy by pushing: SSH on the server is reachable only over Tailscale,
+so the server pulls instead.
 
 ## Notification sound attribution
 
